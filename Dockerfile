@@ -1,23 +1,18 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine
+
+RUN apk add --no-cache python3 make g++
+
+RUN npm install -g pnpm@9
 
 WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install
 
 COPY . .
 
-RUN npm run build
+RUN pnpm install --frozen-lockfile
 
-FROM node:20-alpine
+RUN pnpm --filter @workspace/api-server run build
 
-WORKDIR /app
+EXPOSE 3000
 
-RUN npm install -g serve
-
-COPY --from=builder /app/dist ./dist
-
-EXPOSE 4173
-
-CMD ["serve", "-s", "dist", "-l", "4173"]
+CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
+EOF
