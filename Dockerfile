@@ -1,6 +1,9 @@
 FROM node:22-alpine
 
-RUN npm install -g pnpm@10
+# Required for bcrypt (native C++ module)
+RUN apk add --no-cache python3 make g++
+
+RUN npm install -g pnpm@9
 
 WORKDIR /app
 
