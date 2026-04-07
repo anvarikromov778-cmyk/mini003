@@ -21,6 +21,7 @@ export default function AuthPage() {
   const [code, setCode] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
   const [codeSent, setCodeSent] = useState(false);
+  const [botUsername, setBotUsername] = useState<string | null>(null);
 
   const loginMutation = useLogin();
   const registerMutation = useRegister();
@@ -50,8 +51,9 @@ export default function AuthPage() {
   const handleRequestCode = () => {
     if (!telegramUsername.trim()) return;
     requestCodeMutation.mutate({ data: { telegramUsername: telegramUsername.trim() } }, {
-      onSuccess: () => {
+      onSuccess: (res) => {
         setCodeSent(true);
+        if (res.botUsername) setBotUsername(res.botUsername);
         toast({ title: t("codeSent") });
       },
       onError: () => toast({ title: t("error"), variant: "destructive" }),
@@ -160,9 +162,21 @@ export default function AuthPage() {
                 </Button>
               </div>
               {codeSent && (
-                <p className="text-xs text-success mt-2 flex items-center gap-1">
-                  <Shield className="w-3 h-3" /> {t("enterCode")}
-                </p>
+                <div className="mt-2 flex flex-col gap-1">
+                  <p className="text-xs text-success flex items-center gap-1">
+                    <Shield className="w-3 h-3" /> {t("enterCode")}
+                  </p>
+                  {botUsername && (
+                    <a
+                      href={`https://t.me/${botUsername}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary underline flex items-center gap-1"
+                    >
+                      <Send className="w-3 h-3" /> Открыть @{botUsername} и написать /start
+                    </a>
+                  )}
+                </div>
               )}
             </div>
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
