@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { users, authCodes } from "@workspace/db/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, isNull } from "drizzle-orm";
 import { hashPassword, comparePassword, signToken } from "../lib/auth";
 import { verifyTelegramWebAppData, sendTelegramMessage } from "../lib/telegram";
 import { logger } from "../lib/logger";
@@ -31,7 +31,8 @@ router.post("/register", async (req, res) => {
       .where(and(
         eq(authCodes.code, code.toUpperCase()),
         eq(authCodes.telegramUsername, cleanTgUser),
-        gt(authCodes.expiresAt, Math.floor(Date.now() / 1000))
+        gt(authCodes.expiresAt, Math.floor(Date.now() / 1000)),
+        isNull(authCodes.usedAt)
       ))
       .limit(1);
 
@@ -151,8 +152,24 @@ router.post("/request-code", async (req, res) => {
     }
 
     const cleanUsername = telegramUsername.replace("@", "").toLowerCase();
+
+    // FIX: Rate limit — не создаём новый код если свежий уже есть (< 60 сек)
+    const now = Math.floor(Date.now() / 1000);
+    const recentCode = await db.select().from(authCodes)
+      .where(and(
+        eq(authCodes.telegramUsername, cleanUsername),
+        gt(authCodes.expiresAt, now + 540), // создан менее 60 сек назад
+        isNull(authCodes.usedAt)
+      ))
+      .limit(1);
+
+    if (recentCode.length > 0) {
+      res.status(429).json({ message: "Code already sent. Please wait 60 seconds before requesting again." });
+      return;
+    }
+
     const code = generateCode();
-    const expiresAt = Math.floor(Date.now() / 1000) + 600;
+    const expiresAt = now + 600;
 
     await db.insert(authCodes).values({
       telegramUsername: cleanUsername,
@@ -161,11 +178,34 @@ router.post("/request-code", async (req, res) => {
     });
 
     const botUsername = process.env.TELEGRAM_BOT_USERNAME;
-    if (botUsername) {
-      logger.info(`Auth code ${code} for @${cleanUsername}. User should send /code to bot @${botUsername}`);
+
+    // FIX: Ищем telegramId пользователя по username чтобы отправить ему сообщение напрямую
+    const existingUser = await db.select({ telegramId: users.telegramId })
+      .from(users)
+      .where(eq(users.telegramUsername, cleanUsername))
+      .limit(1);
+
+    let messageSent = false;
+    if (existingUser.length > 0 && existingUser[0].telegramId) {
+      // Отправляем код напрямую пользователю у которого уже есть telegramId
+      const minutesLeft = Math.ceil((expiresAt - now) / 60);
+      messageSent = await sendTelegramMessage(
+        existingUser[0].telegramId,
+        `🔐 <b>Ваш код для входа на Minions Market:</b>\n\n<b>${code}</b>\n\nКод действует ${minutesLeft} мин. Никому не сообщайте его.`
+      );
     }
 
-    res.json({ message: "Code generated", botUsername: botUsername || null });
+    if (!messageSent && botUsername) {
+      // Пользователь ещё не взаимодействовал с ботом — просим написать /start
+      logger.info(`Auth code ${code} for @${cleanUsername}. User must write /start to @${botUsername}`);
+    }
+
+    res.json({
+      message: "Code generated",
+      botUsername: botUsername || null,
+      // FIX: сообщаем, отправили ли код напрямую или нужно идти в бот
+      directMessageSent: messageSent,
+    });
   } catch (err) {
     logger.error(err, "Request code error");
     res.status(500).json({ message: "Internal server error" });
