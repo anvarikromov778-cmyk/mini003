@@ -24,6 +24,14 @@ export default function AuthPage() {
   const [botUsername, setBotUsername] = useState<string | null>(null);
   const [directMessageSent, setDirectMessageSent] = useState(false);
 
+  // FIX: загружаем имя бота сразу при монтировании — пользователь видит его до нажатия кнопки
+  useEffect(() => {
+    fetch("/api/auth/config")
+      .then((r) => r.json())
+      .then((data) => { if (data.botUsername) setBotUsername(data.botUsername); })
+      .catch(() => {});
+  }, []);
+
   const loginMutation = useLogin();
   const registerMutation = useRegister();
   const requestCodeMutation = useRequestAuthCode();
@@ -147,7 +155,22 @@ export default function AuthPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Send className="w-4 h-4 text-primary" />
                 <span className="font-medium text-sm">{t("telegramBot")}</span>
+                {botUsername && (
+                  <a
+                    href={`https://t.me/${botUsername}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto text-xs text-primary underline"
+                  >
+                    @{botUsername}
+                  </a>
+                )}
               </div>
+              {botUsername && !codeSent && (
+                <p className="text-xs text-muted-foreground mb-2">
+                  Введите ваш @username и нажмите «Получить код». Код придёт от бота <b>@{botUsername}</b> в Telegram.
+                </p>
+              )}
               <div className="flex flex-col gap-2">
                 <Input
                   value={telegramUsername}
