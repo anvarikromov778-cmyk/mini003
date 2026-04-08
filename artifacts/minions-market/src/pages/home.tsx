@@ -11,31 +11,31 @@ import { useLocation } from "wouter";
 
 // ─── Мобильные игры ──────────────────────────────────────────────────────────
 const MOBILE_GAMES = [
-  { name: "Brawl Stars",     slug: "brawl-stars",     img: "https://play-lh.googleusercontent.com/BdxcVYGTGpzSIuWXAJqIKf0FbxdlYqLPxGI6tJHziyLzXCqKjKQPvJj5JR_IVVlQCg" },
-  { name: "Clash Royale",    slug: "clash-royale",    img: "https://play-lh.googleusercontent.com/3oBO96sTfT7YxKnULBVSmLSzHINjDAKnP-8mhm-Mm6j8-n3OaNq8BMwFO9PiFLMoHCbL" },
-  { name: "PUBG Mobile",     slug: "pubg-mobile",     img: "https://play-lh.googleusercontent.com/JRd05pyBH41qjgsJuWduRJpDeZG0Hnb0yjf2nWqO6VaV3aVOPH_YCgPlVvYMFNqf2A" },
-  { name: "Standoff 2",      slug: "standoff2",       img: "https://play-lh.googleusercontent.com/7nkpTKnUkZOF4GKPVq6sFMvjb8y9UilKCLNEWxpg5ysq5nv29nt9mkP_ILHhRHIJhQ" },
-  { name: "Clash of Clans",  slug: "clash-of-clans",  img: "https://play-lh.googleusercontent.com/LBc_-FKGR8QqZMiinBuCN3wAcE3SQSZ0yQENQTVFV8GRxxAXWFV4aSLBeFQ8E5DaQ" },
-  { name: "Mobile Legends",  slug: "mobile-legends",  img: "https://play-lh.googleusercontent.com/s5XnH_NQSHNjFiTOmGVRbgzLz0EZDsD7xvlgr4sO3WLPTWHSGGzpHEtjxS9J6Zxf_A" },
-  { name: "Call of Duty M",  slug: "codm",            img: "https://play-lh.googleusercontent.com/2bHiLCuV3j0yl2FZKstMQcE7t7rrKqV3l-1qVNt5uo8_cNv3UmAexDSBaXVivp8x_Q" },
-  { name: "Free Fire",       slug: "free-fire",       img: "https://play-lh.googleusercontent.com/WWcssdzTGrZIBBMRTuHFbfGhfRQFMSGpFRbLfhGRqAFCsXoEFiCzA2vV8e3M6VKAA" },
-  { name: "Roblox",          slug: "roblox",          img: "https://play-lh.googleusercontent.com/WRRdSUYpPe2dSbBRTm2LovNM-LB4YsBt-cNLHN4M8iFJqVLAoGIOOV_mOmCF3ZYD3g" },
-  { name: "Minecraft",       slug: "minecraft-pe",    img: "https://play-lh.googleusercontent.com/VSwHMHlB_5qyGDMxE-UYsQhEWmVFUXFvtMnJgaAH8PG0Wm7sVVcIzqIMSRMpyobH1A" },
-  { name: "Genshin Impact",  slug: "genshin-mobile",  img: "https://play-lh.googleusercontent.com/Bmo2oAvGkgS13_PoZ6Mk1K-eD5AoVF2cqzXh_rVCUOY1G6qbJuMwkBTzc_E0H7ycg" },
-  { name: "Fortnite",        slug: "fortnite-mobile", img: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/83/e4/3b/83e43b5b-b7f5-3f70-f3c5-4475bdc2c02a/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/460x0w.png" },
+  { name: "Brawl Stars",     slug: "brawl-stars",     img: "https://raw.githubusercontent.com/supercell/brawlstars-assets/master/icon.png" },
+  { name: "Clash Royale",    slug: "clash-royale",    img: "https://raw.githubusercontent.com/supercell/clashroyale-assets/master/icon.png" },
+  { name: "PUBG Mobile",     slug: "pubg-mobile",     img: "https://raw.githubusercontent.com/tencent-connect/wiki-assets/main/pubg-mobile-icon.png" },
+  { name: "Standoff 2",      slug: "standoff2",       img: "https://raw.githubusercontent.com/axiom-studio/assets/main/standoff2-icon.png" },
+  { name: "Clash of Clans",  slug: "clash-of-clans",  img: "https://raw.githubusercontent.com/supercell/coc-assets/master/icon.png" },
+  { name: "Mobile Legends",  slug: "mobile-legends",  img: "https://raw.githubusercontent.com/moontoon-assets/wiki/main/ml-icon.png" },
+  { name: "Call of Duty M",  slug: "codm",            img: "https://raw.githubusercontent.com/activision-assets/codm/main/icon.png" },
+  { name: "Free Fire",       slug: "free-fire",       img: "https://raw.githubusercontent.com/garena-assets/freefire/main/icon.png" },
+  { name: "Roblox",          slug: "roblox",          img: "https://www.roblox.com/favicon.ico" },
+  { name: "Minecraft",       slug: "minecraft-pe",    img: "https://www.minecraft.net/content/dam/minecraftnet/files/minecraft-icons/minecraft-java-edition_120x120.png" },
+  { name: "Genshin Impact",  slug: "genshin-mobile",  img: "https://raw.githubusercontent.com/hoyo-assets/wiki/main/genshin-icon.png" },
+  { name: "Fortnite",        slug: "fortnite-mobile", img: "https://www.epicgames.com/favicon.ico" },
 ];
 
 // ─── Игры ПК ─────────────────────────────────────────────────────────────────
 const PC_GAMES = [
   { name: "GTA 5 Online",      slug: "gta5",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg" },
   { name: "Dota 2",            slug: "dota2",      img: "https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg" },
-  { name: "Valorant",          slug: "valorant",   img: "https://cdn2.steamgriddb.com/icon_thumb/bceefbf97d6b84cee2fddcf5fc1e1d26.png" },
+  { name: "Valorant",          slug: "valorant",   img: "https://raw.githubusercontent.com/valorant-assets/wiki/main/valorant-icon.png" },
   { name: "Counter-Strike 2",  slug: "cs2",        img: "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg" },
-  { name: "Fortnite",          slug: "fortnite",   img: "https://cdn2.steamgriddb.com/icon_thumb/7c339f5b7e4dd17d5e7c5ef71ae36a1c.png" },
-  { name: "Minecraft",         slug: "minecraft",  img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1672970/header.jpg" },
+  { name: "Fortnite",          slug: "fortnite",   img: "https://www.epicgames.com/favicon.ico" },
+  { name: "Minecraft",         slug: "minecraft",  img: "https://www.minecraft.net/content/dam/minecraftnet/files/minecraft-icons/minecraft-java-edition_120x120.png" },
   { name: "Genshin Impact",    slug: "genshin",    img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1971870/header.jpg" },
   { name: "World of Warcraft", slug: "wow",        img: "https://bnetcmsus-a.akamaihd.net/cms/template_resource/WOW_RETAIL_GAME_TILE_EN_US_1650568557369.jpg" },
-  { name: "League of Legends", slug: "lol",        img: "https://cdn2.steamgriddb.com/icon_thumb/86cca8d1ddee8c7fb24c3eacde2e8fae.png" },
+  { name: "League of Legends", slug: "lol",        img: "https://raw.githubusercontent.com/riotgames-assets/wiki/main/lol-icon.png" },
   { name: "Rust",              slug: "rust",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/252490/header.jpg" },
   { name: "Apex Legends",      slug: "apex",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg" },
   { name: "Warframe",          slug: "warframe",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/230410/header.jpg" },
@@ -43,18 +43,18 @@ const PC_GAMES = [
 
 // ─── Приложения ──────────────────────────────────────────────────────────────
 const APPS = [
-  { name: "Telegram",    slug: "telegram",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/240px-Telegram_2019_Logo.svg.png", bg: "#2CA5E0" },
-  { name: "TikTok",      slug: "tiktok",      img: "https://sf-tb-sg.ibytedtos.com/obj/eden-sg/uhtyvueh7nulogpoguhm/tiktok-icon2.png", bg: "#010101" },
-  { name: "Instagram",   slug: "instagram",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/240px-Instagram_icon.png", bg: "#E1306C" },
-  { name: "YouTube",     slug: "youtube",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/240px-YouTube_full-color_icon_%282017%29.svg.png", bg: "#FF0000" },
-  { name: "Steam",       slug: "steam-acc",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/240px-Steam_icon_logo.svg.png", bg: "#1B2838" },
-  { name: "Spotify",     slug: "spotify",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png", bg: "#1DB954" },
-  { name: "Netflix",     slug: "netflix",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/240px-Netflix_2015_logo.svg.png", bg: "#E50914" },
-  { name: "Discord",     slug: "discord",     img: "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png", bg: "#5865F2" },
-  { name: "VK",          slug: "vk",          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/VK_Compact_Logo_%282021-present%29.svg/240px-VK_Compact_Logo_%282021-present%29.svg.png", bg: "#4C75A3" },
-  { name: "ChatGPT",     slug: "chatgpt",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/240px-ChatGPT_logo.svg.png", bg: "#10A37F" },
-  { name: "App Store",   slug: "appstore",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/App_Store_%28iOS%29.svg/240px-App_Store_%28iOS%29.svg.png", bg: "#0D96F6" },
-  { name: "PlayStation", slug: "playstation", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/PlayStation_logo.svg/240px-PlayStation_logo.svg.png", bg: "#003087" },
+  { name: "Telegram",    slug: "telegram",    img: "https://www.telegram.org/img/t_logo.png", bg: "#2CA5E0" },
+  { name: "TikTok",      slug: "tiktok",      img: "https://www.tiktok.com/favicon.ico", bg: "#010101" },
+  { name: "Instagram",   slug: "instagram",   img: "https://www.instagram.com/static/images/ico/favicon.ico.png/36b3ee2d91ed.png", bg: "#E1306C" },
+  { name: "YouTube",     slug: "youtube",     img: "https://www.youtube.com/favicon.ico", bg: "#FF0000" },
+  { name: "Steam",       slug: "steam-acc",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/steam/logo.png", bg: "#1B2838" },
+  { name: "Spotify",     slug: "spotify",     img: "https://www.spotify.com/favicon.ico", bg: "#1DB954" },
+  { name: "Netflix",     slug: "netflix",     img: "https://www.netflix.com/favicon.ico", bg: "#E50914" },
+  { name: "Discord",     slug: "discord",     img: "https://discord.com/favicon.ico", bg: "#5865F2" },
+  { name: "VK",          slug: "vk",          img: "https://vk.com/favicon.ico", bg: "#4C75A3" },
+  { name: "ChatGPT",     slug: "chatgpt",     img: "https://cdn.openai.com/API/assets/research-covers/overviewpage/fast-bezier-curves.jpg", bg: "#10A37F" },
+  { name: "App Store",   slug: "appstore",    img: "https://www.apple.com/favicon.ico", bg: "#0D96F6" },
+  { name: "PlayStation", slug: "playstation", img: "https://www.playstation.com/favicon.ico", bg: "#003087" },
 ];
 
 interface CategoryItem {
@@ -242,7 +242,7 @@ export default function HomePage() {
 
       {/* Приложения */}
       <CategorySection
-        emoji="💬"
+        emoji="�️"
         title="Приложения"
         items={APPS}
         newSlugs={["telegram", "chatgpt"]}
