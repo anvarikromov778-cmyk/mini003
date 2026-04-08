@@ -164,6 +164,14 @@ export default function AuthPage() {
             <Button type="submit" className="w-full h-11" disabled={loginMutation.isPending} data-testid="button-login">
               {loginMutation.isPending ? t("loading") : t("login")}
             </Button>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-blue-900 mb-2">🧪 Тестовые учетные данные:</p>
+              <div className="space-y-1 text-xs text-blue-800 font-mono">
+                <div>Username: <span className="font-bold">test</span></div>
+                <div>Password: <span className="font-bold">test123</span></div>
+              </div>
+            </div>
           </form>
         ) : (
           <div className="flex flex-col gap-4">

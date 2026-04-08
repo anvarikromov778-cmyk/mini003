@@ -645,5 +645,17 @@ export async function seed() {
     });
   }
 
+  const testExists = await db.select().from(users).where(eq(users.username, "test")).limit(1);
+  if (testExists.length === 0) {
+    const password = await bcrypt.hash("test123", 10);
+    await db.insert(users).values({
+      username: "test",
+      password,
+      isAdmin: false,
+      isVerified: true,
+      refCode: "TEST001",
+    });
+  }
+
   console.log("Seed completed");
 }
