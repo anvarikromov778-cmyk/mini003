@@ -56,26 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
-  // Проверяем сразу и ещё раз через 500мс — TG WebApp может загрузиться позже
-  const [isTelegramMiniApp, setIsTelegramMiniApp] = useState(detectTelegramMiniApp);
-  // true пока не завершилась проверка TG — не показываем форму логина раньше времени
-  const [isTelegramLoading, setIsTelegramLoading] = useState(() => detectTelegramMiniApp());
 
-  useEffect(() => {
-    if (isTelegramMiniApp) {
-      // Уже знаем — TG Mini App, загрузка продолжается пока auth не завершится
-      return;
-    }
-    const timer = setTimeout(() => {
-      if (detectTelegramMiniApp()) {
-        setIsTelegramMiniApp(true);
-      } else {
-        // Не TG Mini App — снимаем флаг загрузки, показываем форму
-        setIsTelegramLoading(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [isTelegramMiniApp]);
+  // TG SDK уже загружен до React (script в index.html) — проверяем сразу
+  const [isTelegramMiniApp] = useState(detectTelegramMiniApp);
+
+  // Показываем спиннер если это TG Mini App — пока авто-вход не завершится
+  const [isTelegramLoading, setIsTelegramLoading] = useState(detectTelegramMiniApp);
 
   const setAuth = useCallback((newToken: string, newUser: User) => {
     setToken(newToken);
@@ -101,7 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, user, setAuth, updateUser, logout, isAuthenticated: !!token, isTelegramMiniApp, isTelegramLoading, setTelegramLoading: setIsTelegramLoading }}>
+    <AuthContext.Provider value={{
+      token,
+      user,
+      setAuth,
+      updateUser,
+      logout,
+      isAuthenticated: !!token,
+      isTelegramMiniApp,
+      isTelegramLoading,
+      setTelegramLoading: setIsTelegramLoading,
+    }}>
       {children}
     </AuthContext.Provider>
   );
