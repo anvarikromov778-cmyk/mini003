@@ -42,19 +42,21 @@ export default function AuthPage() {
   }, [isAuthenticated, setLocation]);
 
   useEffect(() => {
-    if (isTelegramMiniApp) {
-      const initData = (window as any).Telegram?.WebApp?.initData;
-      if (initData) {
-        telegramAuthMutation.mutate({ data: { initData } }, {
-          onSuccess: (res) => {
-            setAuth(res.token, res.user);
-            toast({ title: t("loginSuccess") });
-            setLocation("/");
-          },
-          onError: () => toast({ title: t("error"), variant: "destructive" }),
-        });
-      }
-    }
+    if (!isTelegramMiniApp) return;
+    const initData = (window as any).Telegram?.WebApp?.initData;
+    if (!initData || initData.length === 0) return;
+    telegramAuthMutation.mutate({ data: { initData } }, {
+      onSuccess: (res) => {
+        setAuth(res.token, res.user);
+        toast({ title: t("loginSuccess") });
+        setLocation("/");
+      },
+      onError: () => {
+        // Если авто-вход не удался — показываем обычную форму
+        toast({ title: t("error"), variant: "destructive" });
+      },
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTelegramMiniApp]);
 
   const handleRequestCode = () => {
@@ -102,7 +104,8 @@ export default function AuthPage() {
     });
   };
 
-  if (isTelegramMiniApp) {
+  // В TG Mini App показываем спиннер только пока идёт авто-вход
+  if (isTelegramMiniApp && telegramAuthMutation.isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
