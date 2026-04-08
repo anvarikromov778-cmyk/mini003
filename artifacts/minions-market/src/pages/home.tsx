@@ -11,34 +11,34 @@ import { useLocation } from "wouter";
 
 // ─── Мобильные игры ──────────────────────────────────────────────────────────
 const MOBILE_GAMES = [
-  { name: "Brawl Stars",     slug: "brawl-stars",     img: "https://media.rawg.io/media/games/baf/bafbac650de0c6fd36d7c6301e4b7372.jpg" },
-  { name: "Clash Royale",    slug: "clash-royale",    img: "https://media.rawg.io/media/games/562/562e33776e1a4b39d0be85a5fdc3ffe5.jpg" },
-  { name: "PUBG Mobile",     slug: "pubg-mobile",     img: "https://media.rawg.io/media/games/e60/e60e4cb13dc0793eaea104fbc98b3910.jpg" },
-  { name: "Standoff 2",      slug: "standoff2",       img: "https://media.rawg.io/media/games/2d3/2d348881d1b764dff81df505eacc0f63.jpg" },
-  { name: "Clash of Clans",  slug: "clash-of-clans",  img: "https://media.rawg.io/media/games/d20/d20ee61aa0248b32e47a3122b425da10.jpg" },
-  { name: "Mobile Legends",  slug: "mobile-legends",  img: "https://media.rawg.io/media/games/8cc/8cc77154ecc6ce5bfa45ca293a01a230.jpg" },
-  { name: "Call of Duty M",  slug: "codm",            img: "https://media.rawg.io/media/games/949/9498cf85b58d5c11424e58b0c9ed5313.jpg" },
-  { name: "Free Fire",       slug: "free-fire",       img: "https://media.rawg.io/media/games/12f/12f6cac1b89ebe1819b7a200e327e4ef.jpg" },
-  { name: "Roblox",          slug: "roblox",          img: "https://media.rawg.io/media/games/198/1988a98f7e14cbf8db158b0b9beb0e44.jpg" },
-  { name: "Minecraft",       slug: "minecraft-pe",    img: "https://media.rawg.io/media/games/f87/f87457e8347484ecaaf22448725e226f.jpg" },
-  { name: "Genshin Impact",  slug: "genshin-mobile",  img: "https://media.rawg.io/media/games/26d/26d96ce4d66f32d38e5f0e19a0adc9f4.jpg" },
-  { name: "Fortnite",        slug: "fortnite-mobile", img: "https://media.rawg.io/media/games/713/713269608ba0bff142af87d3e43a5ed2.jpg" },
+  { name: "Brawl Stars",     slug: "brawl-stars",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Brawl_Stars_logo.svg/512px-Brawl_Stars_logo.svg.png" },
+  { name: "Clash Royale",    slug: "clash-royale",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Clash_Royale_Logo.png/512px-Clash_Royale_Logo.png" },
+  { name: "PUBG Mobile",     slug: "pubg-mobile",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/PUBG_Mobile_logo.png/512px-PUBG_Mobile_logo.png" },
+  { name: "Standoff 2",      slug: "standoff2",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Standoff_2_logo.png/512px-Standoff_2_logo.png" },
+  { name: "Clash of Clans",  slug: "clash-of-clans",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Clash_of_Clans_Logo.png/512px-Clash_of_Clans_Logo.png" },
+  { name: "Mobile Legends",  slug: "mobile-legends",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Mobile_Legends_Bang_Bang_logo.png/512px-Mobile_Legends_Bang_Bang_logo.png" },
+  { name: "Call of Duty M",  slug: "codm",            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Call_of_Duty_Mobile_logo.png/512px-Call_of_Duty_Mobile_logo.png" },
+  { name: "Free Fire",       slug: "free-fire",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Free_Fire_logo.png/512px-Free_Fire_logo.png" },
+  { name: "Roblox",          slug: "roblox",          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Roblox_logo.svg/512px-Roblox_logo.svg.png" },
+  { name: "Minecraft",       slug: "minecraft-pe",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Minecraft_logo.svg/512px-Minecraft_logo.svg.png" },
+  { name: "Genshin Impact",  slug: "genshin-mobile",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Genshin_Impact_logo.png/512px-Genshin_Impact_logo.png" },
+  { name: "Fortnite",        slug: "fortnite-mobile", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Fortnite_logo.png/512px-Fortnite_logo.png" },
 ];
 
 // ─── Игры ПК ─────────────────────────────────────────────────────────────────
 const PC_GAMES = [
-  { name: "GTA 5 Online",      slug: "gta5",       img: "https://cdn2.steamgriddb.com/icon_thumb/cdbe18d12b5e5e1b08961a0ad0e3b233.png" },
-  { name: "Dota 2",            slug: "dota2",      img: "https://cdn2.steamgriddb.com/icon_thumb/73c89a6388b13c69a0e91fe6e15a7ec9.png" },
-  { name: "Valorant",          slug: "valorant",   img: "https://cdn2.steamgriddb.com/icon_thumb/31e60c2e56e7e37e48df30c9ace96f9b.png" },
-  { name: "Counter-Strike 2",  slug: "cs2",        img: "https://cdn2.steamgriddb.com/icon_thumb/3ffc48e8f57fa097c06e06f686e3efcf.png" },
-  { name: "Fortnite",          slug: "fortnite",   img: "https://cdn2.steamgriddb.com/icon_thumb/7c339f5b7e4dd17d5e7c5ef71ae36a1c.png" },
-  { name: "Minecraft",         slug: "minecraft",  img: "https://cdn2.steamgriddb.com/icon_thumb/1a2ae4db3a38f098e9373dd34cf26c8a.png" },
-  { name: "Genshin Impact",    slug: "genshin",    img: "https://cdn2.steamgriddb.com/icon_thumb/d5df098d3fea32c8f6a5408e34fd9f41.png" },
-  { name: "World of Warcraft", slug: "wow",        img: "https://cdn2.steamgriddb.com/icon_thumb/e8e85f34cb3e1fb8b85c02e1eb9e7e0a.png" },
-  { name: "League of Legends", slug: "lol",        img: "https://cdn2.steamgriddb.com/icon_thumb/86cca8d1ddee8c7fb24c3eacde2e8fae.png" },
-  { name: "Rust",              slug: "rust",       img: "https://cdn2.steamgriddb.com/icon_thumb/32d27eb5d31ae72e6373f40e8f83b75d.png" },
-  { name: "Apex Legends",      slug: "apex",       img: "https://cdn2.steamgriddb.com/icon_thumb/17c1f0c3e5cbfc7d4d5d3d19c0e7e3c9.png" },
-  { name: "Warframe",          slug: "warframe",   img: "https://cdn2.steamgriddb.com/icon_thumb/a4ce2d02d5e64ce5c2d6e8f5c7b8e5f3.png" },
+  { name: "GTA 5 Online",      slug: "gta5",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/capsule_231x87.jpg" },
+  { name: "Dota 2",            slug: "dota2",      img: "https://cdn.cloudflare.steamstatic.com/steam/apps/570/capsule_231x87.jpg" },
+  { name: "Valorant",          slug: "valorant",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/2169010/capsule_231x87.jpg" },
+  { name: "Counter-Strike 2",  slug: "cs2",        img: "https://cdn.cloudflare.steamstatic.com/steam/apps/730/capsule_231x87.jpg" },
+  { name: "Fortnite",          slug: "fortnite",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/212680/capsule_231x87.jpg" },
+  { name: "Minecraft",         slug: "minecraft",  img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1672970/capsule_231x87.jpg" },
+  { name: "Genshin Impact",    slug: "genshin",    img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1971870/capsule_231x87.jpg" },
+  { name: "World of Warcraft", slug: "wow",        img: "https://cdn.cloudflare.steamstatic.com/steam/apps/212980/capsule_231x87.jpg" },
+  { name: "League of Legends", slug: "lol",        img: "https://cdn.cloudflare.steamstatic.com/steam/apps/21779/capsule_231x87.jpg" },
+  { name: "Rust",              slug: "rust",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/252490/capsule_231x87.jpg" },
+  { name: "Apex Legends",      slug: "apex",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/capsule_231x87.jpg" },
+  { name: "Warframe",          slug: "warframe",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/230410/capsule_231x87.jpg" },
 ];
 
 // ─── Приложения ──────────────────────────────────────────────────────────────
