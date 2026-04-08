@@ -46,8 +46,41 @@ function detectTelegramMiniApp(): boolean {
   }
 }
 
+function getTelegramIdFromInitData(): string | null {
+  try {
+    const tg = (window as any).Telegram?.WebApp;
+    if (!tg?.initData) return null;
+    const params = new URLSearchParams(tg.initData);
+    const userStr = params.get("user");
+    if (!userStr) return null;
+    const tgUser = JSON.parse(decodeURIComponent(userStr));
+    return tgUser?.id ? String(tgUser.id) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("mm_token"));
+  const [token, setToken] = useState<string | null>(() => {
+    // Если открыто как TG Mini App — проверяем что сохранённый пользователь
+    // совпадает с текущим TG аккаунтом. Если нет — сбрасываем сессию.
+    const currentTgId = getTelegramIdFromInitData();
+    if (currentTgId) {
+      try {
+        const storedUser = localStorage.getItem("mm_user");
+        const parsed = storedUser ? JSON.parse(storedUser) : null;
+        if (parsed?.telegramId && parsed.telegramId !== currentTgId) {
+          // Другой TG аккаунт — очищаем старую сессию
+          localStorage.removeItem("mm_token");
+          localStorage.removeItem("mm_user");
+          return null;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return localStorage.getItem("mm_token");
+  });
   const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem("mm_user");
