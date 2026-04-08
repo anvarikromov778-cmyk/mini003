@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
 import { LangProvider } from "@/lib/i18n";
 import { Layout } from "@/components/layout";
+import { RadioProvider } from "@/lib/radio";
 import { lazy, Suspense } from "react";
 
 const Home = lazy(() => import("@/pages/home"));
@@ -75,12 +76,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <LangProvider>
         <AuthProvider>
+          <RadioProvider>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <Router />
             </WouterRouter>
             <Toaster />
           </TooltipProvider>
+          </RadioProvider>
         </AuthProvider>
       </LangProvider>
     </QueryClientProvider>
