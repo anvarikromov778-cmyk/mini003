@@ -1,4 +1,4 @@
-import { pgTable, text, numeric, integer, boolean, bigint, index } from "drizzle-orm/pg-core";
+import { pgTable, text, numeric, integer, boolean, bigint, index, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -27,6 +27,13 @@ export const users = pgTable("users", {
   sellerLevel: text("seller_level").notNull().default("newcomer"),
   refCode: text("ref_code").unique(),
   refBy: text("ref_by"),
+  refCount: integer("ref_count").notNull().default(0),
+  refRewards: numeric("ref_rewards", { precision: 12, scale: 2 }).notNull().default("0"),
+  // 2FA via Telegram
+  twoFAEnabled: boolean("two_fa_enabled").notNull().default(false),
+  twoFACode: text("two_fa_code"),
+  twoFAExpires: bigint("two_fa_expires", { mode: "number" }),
+  notificationSettings: jsonb("notification_settings").$type<{ email: boolean; telegram: boolean; push: boolean }>().default({ email: true, telegram: true, push: false }),
   createdAt: bigint("created_at", { mode: "number" }).notNull().$defaultFn(() => Math.floor(Date.now() / 1000)),
   lastActive: bigint("last_active", { mode: "number" }).notNull().$defaultFn(() => Math.floor(Date.now() / 1000)),
 }, (table) => [

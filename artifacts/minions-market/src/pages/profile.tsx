@@ -99,7 +99,7 @@ export default function ProfilePage() {
               <span className="text-sm font-medium">{item.label}</span>
             </Link>
           ))}
-          {profile.isAdmin && (
+          {(profile as any).isAdmin && (
             <Link href="/admin" className="bg-card rounded-xl p-3 border border-primary/30 flex items-center gap-2 col-span-2" data-testid="link-admin">
               <Shield className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">{t("admin")}</span>

@@ -24,8 +24,8 @@ export async function createRukassaPayment(amount: number, orderId: string, desc
         description,
       }),
     });
-    const data = await res.json();
-    if (data.url) return { orderId, payUrl: data.url };
+    const data = await res.json() as Record<string, unknown>;
+    if (typeof data.url === "string") return { orderId, payUrl: data.url };
     logger.error(data, "Rukassa error");
     return null;
   } catch (err) {
@@ -56,8 +56,8 @@ export async function createNowPayment(amount: number, orderId: string, descript
         cancel_url: process.env.APP_URL || "",
       }),
     });
-    const data = await res.json();
-    if (data.invoice_url) return { orderId, payUrl: data.invoice_url };
+    const data = await res.json() as Record<string, unknown>;
+    if (typeof data.invoice_url === "string") return { orderId, payUrl: data.invoice_url };
     return null;
   } catch (err) {
     logger.error(err, "NOWPayments request failed");
@@ -86,8 +86,8 @@ export async function createCrystalPayPayment(amount: number, orderId: string, d
         lifetime: 3600,
       }),
     });
-    const data = await res.json();
-    if (data.url) return { orderId, payUrl: data.url };
+    const data = await res.json() as Record<string, unknown>;
+    if (typeof data.url === "string") return { orderId, payUrl: data.url };
     return null;
   } catch (err) {
     logger.error(err, "CrystalPay request failed");

@@ -68,10 +68,11 @@ export default function CatalogPage() {
                 <Badge
                   key={c.id}
                   variant={category === c.slug ? "default" : "secondary"}
-                  className="cursor-pointer shrink-0 text-xs"
+                  className="cursor-pointer shrink-0 text-xs flex items-center gap-1"
                   onClick={() => setCategory(c.slug)}
                   data-testid={`filter-cat-${c.slug}`}
                 >
+                  <span className="text-sm">{c.icon}</span>
                   {c.name}
                 </Badge>
               ))}

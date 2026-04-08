@@ -4,6 +4,7 @@ import { products, users, favorites } from "@workspace/db/schema";
 import { eq, desc, asc, sql, and, ilike, or } from "drizzle-orm";
 import { authMiddleware, optionalAuth } from "../lib/auth";
 import { logger } from "../lib/logger";
+import { normalizeRouteParam } from "../lib/params";
 
 const router = Router();
 
@@ -16,7 +17,14 @@ router.get("/", optionalAuth, async (req, res) => {
 
     const conditions = [eq(products.status, "active")];
     if (category) conditions.push(eq(products.category, category));
-    if (search) conditions.push(or(ilike(products.title, `%${search}%`), ilike(products.description, `%${search}%`))!);
+    if (search) {
+      const searchTerm = `%${search}%`;
+      conditions.push(or(
+        ilike(products.title, searchTerm),
+        ilike(products.description, searchTerm),
+        sql`${products.tags}::text ILIKE ${searchTerm}`
+      )!);
+    }
 
     const where = and(...conditions);
 
@@ -120,6 +128,9 @@ router.get("/featured", async (_req, res) => {
 
 router.get("/:id", optionalAuth, async (req, res) => {
   try {
+    const productId = normalizeRouteParam(req.params.id);
+    if (!productId) { res.status(400).json({ message: "Invalid product id" }); return; }
+
     const [product] = await db.select({
       id: products.id,
       sellerId: products.sellerId,
@@ -148,7 +159,7 @@ router.get("/:id", optionalAuth, async (req, res) => {
       },
     }).from(products)
       .leftJoin(users, eq(products.sellerId, users.id))
-      .where(eq(products.id, req.params.id))
+      .where(eq(products.id, productId))
       .limit(1);
 
     if (!product) { res.status(404).json({ message: "Not found" }); return; }
@@ -204,7 +215,9 @@ router.post("/", authMiddleware, async (req, res) => {
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [existing] = await db.select().from(products).where(eq(products.id, req.params.id)).limit(1);
+    const productId = normalizeRouteParam(req.params.id);
+    if (!productId) { res.status(400).json({ message: "Invalid product id" }); return; }
+    const [existing] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
     if (!existing || existing.sellerId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
 
     const { title, description, price, category, images, deliveryType, deliveryData, game, server, tags, status } = req.body;
@@ -221,7 +234,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
       ...(tags ? { tags } : {}),
       ...(status && ["active", "hidden"].includes(status) ? { status } : {}),
       updatedAt: Math.floor(Date.now() / 1000),
-    }).where(eq(products.id, req.params.id)).returning();
+    }).where(eq(products.id, productId)).returning();
 
     res.json(product);
   } catch (err) {
@@ -233,10 +246,12 @@ router.put("/:id", authMiddleware, async (req, res) => {
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [existing] = await db.select().from(products).where(eq(products.id, req.params.id)).limit(1);
+    const productId = normalizeRouteParam(req.params.id);
+    if (!productId) { res.status(400).json({ message: "Invalid product id" }); return; }
+    const [existing] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
     if (!existing || (existing.sellerId !== userId && !(req as any).isAdmin)) { res.status(403).json({ message: "Forbidden" }); return; }
 
-    await db.delete(products).where(eq(products.id, req.params.id));
+    await db.delete(products).where(eq(products.id, productId));
     res.json({ message: "Deleted" });
   } catch (err) {
     logger.error(err, "Delete product error");
@@ -247,7 +262,8 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 router.post("/:id/favorite", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const productId = req.params.id;
+    const productId = normalizeRouteParam(req.params.id);
+    if (!productId) { res.status(400).json({ message: "Invalid product id" }); return; }
     const existing = await db.select().from(favorites).where(and(eq(favorites.userId, userId), eq(favorites.productId, productId))).limit(1);
 
     if (existing.length > 0) {

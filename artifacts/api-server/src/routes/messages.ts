@@ -2,8 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { messages, users } from "@workspace/db/schema";
 import { eq, desc, and, or, sql } from "drizzle-orm";
-import { authMiddleware } from "../lib/auth";
-import { logger } from "../lib/logger";
+import { authMiddleware } from "../lib/auth";import { normalizeRouteParam } from "../lib/params";import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -64,7 +63,8 @@ router.get("/chats", authMiddleware, async (req, res) => {
 router.get("/:userId", authMiddleware, async (req, res) => {
   try {
     const myId = (req as any).userId;
-    const partnerId = req.params.userId;
+    const partnerId = normalizeRouteParam(req.params.userId);
+    if (!partnerId) { res.status(400).json({ message: "Invalid user id" }); return; }
 
     const msgs = await db.select({
       id: messages.id,
@@ -100,8 +100,9 @@ router.get("/:userId", authMiddleware, async (req, res) => {
 router.post("/:userId", authMiddleware, async (req, res) => {
   try {
     const senderId = (req as any).userId;
-    const receiverId = req.params.userId;
+    const receiverId = normalizeRouteParam(req.params.userId);
     const { text } = req.body;
+    if (!receiverId) { res.status(400).json({ message: "Invalid user id" }); return; }
 
     if (!text?.trim()) { res.status(400).json({ message: "Empty message" }); return; }
     if (senderId === receiverId) { res.status(400).json({ message: "Cannot message yourself" }); return; }

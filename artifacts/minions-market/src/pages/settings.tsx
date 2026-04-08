@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, LogOut, Globe } from "lucide-react";
+import { ArrowLeft, LogOut, Globe, Upload, User } from "lucide-react";
 
 export default function SettingsPage() {
   const { t, lang, setLang } = useLang();
@@ -22,17 +22,29 @@ export default function SettingsPage() {
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [avatar, setAvatar] = useState(user?.avatar || "");
   const [bio, setBio] = useState(user?.bio || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const updateProfile = useUpdateProfile();
 
   if (!isAuthenticated) { setLocation("/auth"); return null; }
 
-  const handleSave = () => {
-    updateProfile.mutate({ data: { firstName: firstName || undefined, lastName: lastName || undefined, avatar: avatar || undefined, bio: bio || undefined } }, {
+  const handleSave = async () => {
+    let avatarUrl = avatar;
+    if (avatarFile) {
+      // Placeholder for file upload - in real app, upload to server
+      const formData = new FormData();
+      formData.append('file', avatarFile);
+      // const response = await fetch('/api/upload', { method: 'POST', body: formData });
+      // const data = await response.json();
+      // avatarUrl = data.url;
+      avatarUrl = URL.createObjectURL(avatarFile); // Temporary for demo
+    }
+    updateProfile.mutate({ data: { firstName: firstName || undefined, lastName: lastName || undefined, avatar: avatarUrl || undefined, bio: bio || undefined } }, {
       onSuccess: (updated) => {
         updateUser(updated);
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
         toast({ title: t("profileUpdated") });
+        setAvatarFile(null);
       },
       onError: () => toast({ title: t("error"), variant: "destructive" }),
     });
@@ -62,8 +74,17 @@ export default function SettingsPage() {
             <Input value={lastName} onChange={(e) => setLastName(e.target.value)} data-testid="input-lastname" />
           </div>
           <div className="flex flex-col gap-2">
-            <Label>{t("avatar")} (URL)</Label>
-            <Input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://..." data-testid="input-avatar" />
+            <Label>{t("avatar")}</Label>
+            <div className="flex items-center gap-2">
+              <Input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://..." />
+              <Label htmlFor="avatar-upload" className="cursor-pointer">
+                <Button variant="outline" size="icon" asChild>
+                  <span><Upload className="w-4 h-4" /></span>
+                </Button>
+              </Label>
+              <Input id="avatar-upload" type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="hidden" />
+            </div>
+            {avatarFile && <p className="text-sm text-muted-foreground">{avatarFile.name}</p>}
           </div>
           <div className="flex flex-col gap-2">
             <Label>{t("bio")}</Label>

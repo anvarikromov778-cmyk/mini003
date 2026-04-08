@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { deals, products, users, reviews, transactions } from "@workspace/db/schema";
 import { eq, desc, and, or, sql } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
+import { normalizeRouteParam } from "../lib/params";
 import { notifyAdmin } from "../lib/telegram";
 import { logger } from "../lib/logger";
 
@@ -124,7 +125,9 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [deal] = await db.select().from(deals).where(eq(deals.id, req.params.id)).limit(1);
+    const dealId = normalizeRouteParam(req.params.id);
+    if (!dealId) { res.status(400).json({ message: "Invalid deal id" }); return; }
+    const [deal] = await db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
     if (!deal) { res.status(404).json({ message: "Not found" }); return; }
     if (deal.buyerId !== userId && deal.sellerId !== userId && !(req as any).isAdmin) {
       res.status(403).json({ message: "Forbidden" }); return;
@@ -144,7 +147,9 @@ router.get("/:id", authMiddleware, async (req, res) => {
 router.post("/:id/deliver", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [deal] = await db.select().from(deals).where(eq(deals.id, req.params.id)).limit(1);
+    const dealId = normalizeRouteParam(req.params.id);
+    if (!dealId) { res.status(400).json({ message: "Invalid deal id" }); return; }
+    const [deal] = await db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
     if (!deal || deal.sellerId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
     if (deal.status !== "paid") { res.status(400).json({ message: "Invalid status" }); return; }
 
@@ -161,7 +166,9 @@ router.post("/:id/deliver", authMiddleware, async (req, res) => {
 router.post("/:id/confirm", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [deal] = await db.select().from(deals).where(eq(deals.id, req.params.id)).limit(1);
+    const dealId = normalizeRouteParam(req.params.id);
+    if (!dealId) { res.status(400).json({ message: "Invalid deal id" }); return; }
+    const [deal] = await db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
     if (!deal || deal.buyerId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
     if (deal.status !== "delivered") { res.status(400).json({ message: "Invalid status" }); return; }
 
@@ -202,7 +209,9 @@ router.post("/:id/confirm", authMiddleware, async (req, res) => {
 router.post("/:id/dispute", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [deal] = await db.select().from(deals).where(eq(deals.id, req.params.id)).limit(1);
+    const dealId = normalizeRouteParam(req.params.id);
+    if (!dealId) { res.status(400).json({ message: "Invalid deal id" }); return; }
+    const [deal] = await db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
     if (!deal || deal.buyerId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
     if (!["paid", "delivered"].includes(deal.status)) { res.status(400).json({ message: "Invalid status" }); return; }
 
@@ -220,7 +229,9 @@ router.post("/:id/dispute", authMiddleware, async (req, res) => {
 router.post("/:id/review", authMiddleware, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    const [deal] = await db.select().from(deals).where(eq(deals.id, req.params.id)).limit(1);
+    const dealId = normalizeRouteParam(req.params.id);
+    if (!dealId) { res.status(400).json({ message: "Invalid deal id" }); return; }
+    const [deal] = await db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
     if (!deal || deal.buyerId !== userId) { res.status(403).json({ message: "Forbidden" }); return; }
     if (deal.status !== "completed") { res.status(400).json({ message: "Deal not completed" }); return; }
 

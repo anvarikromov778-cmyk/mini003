@@ -4,7 +4,7 @@ import { useLang } from "@/lib/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Star, Eye, Gamepad2, Coins, Shield, Rocket, Crown, Swords, ShoppingBag, Sparkles, Users, TrendingUp, Heart } from "lucide-react";
+import { Search, Star, Eye, Gamepad2, Coins, Shield, Rocket, Crown, Swords, ShoppingBag, Sparkles, Users, TrendingUp, Heart, Smartphone, MessageCircle, MessageSquare, Video, Camera, Hash, Music, Play } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
