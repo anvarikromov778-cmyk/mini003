@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { useLang } from "@/lib/i18n";
-import { ArrowLeft, X, ChevronRight } from "lucide-react";
+import { ArrowLeft, X, ChevronRight, Upload, Trash2, Search } from "lucide-react";
 import { PLAYEROK_GAMES, PLAYEROK_MOBILE_GAMES, PLAYEROK_APPS } from "@/data/playerok-categories";
 
 const allCategories = [
@@ -11,363 +11,527 @@ const allCategories = [
   ...PLAYEROK_APPS,
 ];
 
+const forbiddenWords = ["Продам", "Срочно", "Дешево", "Куплю"];
+
 export default function SellPage() {
   const { t } = useLang();
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
-    category: "",
-    categoryIcon: "🎮",
     title: "",
     description: "",
-    price: "",
+    priceSeller: "",
+    priceBuyer: "",
     quantity: "1",
     contact: "",
     email: "",
   });
-
-  const [step, setStep] = useState<"category" | "details" | "review">("category");
-  const [submitted, setSubmitted] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [direction, setDirection] = useState(0);
 
-  const handleSelectCategory = (categoryName: string, categoryIcon: string) => {
-    setFormData({ ...formData, category: categoryName, categoryIcon });
-    setStep("details");
-    setSearchQuery("");
+  const handleSelectCategory = (category: any) => {
+    setSelectedCategory(category);
+    setDirection(1);
+    setCurrentStep(2);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (name === "title") {
+      const hasForbidden = forbiddenWords.some(word => value.toLowerCase().includes(word.toLowerCase()));
+      setTitleError(hasForbidden ? "Заголовок не должен содержать запрещенные слова" : "");
+    }
   };
 
-  const handleNext = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!formData.title || !formData.description || !formData.price) {
-      alert("Пожалуйста, заполните все обязательные поля");
-      return;
+  const handlePriceChange = (field: "priceSeller" | "priceBuyer", value: string) => {
+    const numValue = parseFloat(value) || 0;
+    if (field === "priceBuyer") {
+      const sellerPrice = numValue * 0.9;
+      setFormData({
+        ...formData,
+        priceBuyer: value,
+        priceSeller: sellerPrice.toFixed(2),
+      });
+    } else {
+      const buyerPrice = numValue / 0.9;
+      setFormData({
+        ...formData,
+        priceSeller: value,
+        priceBuyer: buyerPrice.toFixed(2),
+      });
     }
-    setStep("review");
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages(prev => [...prev, ...files].slice(0, 5)); // max 5 images
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.title || !formData.description || !formData.priceBuyer || titleError) {
+      return;
+    }
+
     setSubmitted(true);
     setTimeout(() => {
+      setCurrentStep(1);
+      setSelectedCategory(null);
       setSubmitted(false);
-      setStep("category");
       setFormData({
-        category: "",
-        categoryIcon: "🎮",
         title: "",
         description: "",
-        price: "",
+        priceSeller: "",
+        priceBuyer: "",
         quantity: "1",
         contact: "",
         email: "",
       });
-    }, 2500);
+      setImages([]);
+    }, 2000);
   };
 
-  // Filter categories based on search
-  const filteredCategories = categories.map((cat) => ({
-    ...cat,
-    items: cat.items.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
-  }));
+  const filteredCategories = allCategories.filter((cat) =>
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const stepVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
+  const nextStep = () => {
+    setDirection(1);
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const prevStep = () => {
+    setDirection(-1);
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleClose = () => {
+    window.location.href = "/";
+  };
+
+  const getStepLabel = () => {
+    switch (currentStep) {
+      case 1:
+        return "Выберите категорию";
+      case 2:
+        return "Информация о товаре";
+      case 3:
+        return "Загрузка изображений";
+      default:
+        return "";
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (step === "category") window.location.href = "/";
-                else setStep("category");
-              }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            <div className="flex items-center gap-2">
-              <img src={PLAYEROK_LOGO} alt="PlayerOK" className="w-6 h-6" />
-              <h1 className="text-lg font-bold text-gray-900">Выставить товар</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${step === "category" ? "bg-blue-100 text-blue-700" : "text-gray-500"}`}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-current text-white text-xs font-bold">1</div>
-              <span>Категория</span>
-            </div>
-            <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${step !== "category" ? "bg-blue-100 text-blue-700" : "text-gray-500"}`}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-current text-white text-xs font-bold">2</div>
-              <span>Описание</span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="w-full text-white font-sans outline-none bg-bg-main">
+      {/* Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-bg-card z-40">
+        <motion.div
+          className="h-full bg-accent"
+          initial={{ width: "0%" }}
+          animate={{ width: `${(currentStep / 3) * 100}%` }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        />
+      </div>
 
-      {/* Success Modal */}
-      {submitted && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Товар выставлен!</h2>
-            <p className="text-gray-600 mb-8">Ваше объявление опубликовано и видно в каталоге площадки</p>
-            <Button onClick={() => (window.location.href = "/")} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-              Вернуться на главную
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {step === "category" ? (
-          <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Выберите категорию</h2>
-              <p className="text-gray-600 mb-6">Укажите, к какой категории относится ваш товар</p>
-
-              {/* Search */}
-              <div className="relative mb-8">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Поиск по названию игры или приложения..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Categories */}
-            {filteredCategories.map((category) =>
-              category.items.length > 0 ? (
-                <div key={category.name} className="mb-12">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-2xl">{category.icon}</span>
-                    {category.name}
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {category.items.map((item) => (
-                      <button
-                        key={item.name}
-                        onClick={() => handleSelectCategory(item.name, category.icon)}
-                        className="group relative"
-                      >
-                        <div className="bg-white border border-gray-200 rounded-lg p-2 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden h-full flex flex-col">
-                          <div className="aspect-square mb-2 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                              onError={(e) => {
-                                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f3f4f6' width='100' height='100'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' font-size='12' fill='%239ca3af'%3EНет фото%3C/text%3E%3C/svg%3E";
-                              }}
-                            />
-                          </div>
-                          <p className="font-medium text-gray-900 text-xs line-clamp-2 text-center flex-1">{item.name}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null
-            )}
-
-            {searchQuery && filteredCategories.every((cat) => cat.items.length === 0) && (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600">Категория не найдена</p>
-              </div>
-            )}
-          </div>
-        ) : step === "details" ? (
-          <div className="max-w-2xl">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 flex items-center gap-3">
-              <div className="w-12 h-12 bg-white border border-blue-200 rounded-lg flex items-center justify-center text-2xl">{formData.categoryIcon}</div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{formData.category}</h3>
-                <p className="text-sm text-gray-600">Вы выбрали эту категорию</p>
-              </div>
-              <button onClick={() => setStep("category")} className="ml-auto text-blue-600 hover:text-blue-700 text-sm font-semibold">
-                Изменить
-              </button>
-            </div>
-
-            <form onSubmit={handleNext} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Название товара *</label>
-                <Input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Например: Account с 100 часов DotA 2"
-                  className="w-full border-gray-300"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Описание товара *</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Опишите товар подробно: что входит в комплект, его характеристики, условия доставки и т.д."
-                  className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sm"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Цена (₽) *</label>
-                  <Input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    placeholder="0"
-                    className="w-full border-gray-300"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Количество</label>
-                  <Input
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    placeholder="1"
-                    className="w-full border-gray-300"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Ваше имя</label>
-                  <Input
-                    type="text"
-                    name="contact"
-                    value={formData.contact}
-                    onChange={handleInputChange}
-                    placeholder="Иван"
-                    className="w-full border-gray-300"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
-                  <Input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="example@mail.com"
-                    className="w-full border-gray-300"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-yellow-900">
-                  Убедитесь, что товар соответствует правилам площадки. Нарушающие объявления будут удалены без возмещения средств.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep("category")}
-                  className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-900 font-semibold hover:bg-gray-50 transition-colors"
-                >
-                  ← Назад
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  Дальше →
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Проверьте информацию</h2>
-
-            <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6 mb-8">
-              <div className="border-b pb-6">
-                <p className="text-sm text-gray-600 mb-2">Категория</p>
-                <div className="flex items-center gap-3">
-                  <div className="text-4xl">{formData.categoryIcon}</div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{formData.category}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-b pb-6">
-                <p className="text-sm text-gray-600 mb-2">Название</p>
-                <p className="text-lg font-semibold text-gray-900">{formData.title}</p>
-              </div>
-
-              <div className="border-b pb-6">
-                <p className="text-sm text-gray-600 mb-2">Описание</p>
-                <p className="text-gray-800 whitespace-pre-wrap">{formData.description}</p>
-              </div>
-
-              <div className="border-b pb-6 grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Цена</p>
-                  <p className="text-2xl font-bold text-gray-900">₽{formData.price}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Количество</p>
-                  <p className="text-lg font-semibold text-gray-900">{formData.quantity}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {formData.contact && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Контакт</p>
-                    <p className="text-gray-900">{formData.contact}</p>
-                  </div>
-                )}
-                {formData.email && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Email</p>
-                    <p className="text-gray-900">{formData.email}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep("details")}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-900 font-semibold hover:bg-gray-50 transition-colors"
-              >
-                ← Редактировать
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                <Check className="w-5 h-5" />
-                Опубликовать товар
-              </button>
-            </div>
-          </div>
+      {/* Success Notification */}
+      <AnimatePresence>
+        {submitted && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-16 right-4 bg-green-500 text-white px-6 py-3 rounded-container shadow-lg z-50 flex items-center gap-2"
+          >
+            <span>✓</span>
+            <span>Товар успешно опубликован!</span>
+          </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Header with step label */}
+      <div className="bg-bg-main border-b border-bg-card/50 pt-2 pb-2 px-4 sticky top-1 z-30">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1">
+            <motion.button
+              onClick={prevStep}
+              className="p-2 hover:bg-bg-card rounded-button transition-colors outline-none"
+              whileTap={{ scale: 0.98 }}
+              disabled={currentStep === 1}
+              style={{ opacity: currentStep === 1 ? 0.5 : 1, pointerEvents: currentStep === 1 ? "none" : "auto" }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </motion.button>
+            <h1 className="text-base font-semibold">{getStepLabel()}</h1>
+          </div>
+          <motion.button
+            onClick={handleClose}
+            className="p-2 hover:bg-bg-card rounded-button transition-colors outline-none"
+            whileTap={{ scale: 0.98 }}
+          >
+            <X className="w-5 h-5" />
+          </motion.button>
+        </div>
+      </div>
+
+      <main className="px-4 py-6 max-w-[550px] mx-auto">
+        <AnimatePresence custom={direction} mode="wait">
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              {/* Step 1: Category Selection */}
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm text-gray-400 mb-4">Выберите интересующую вас категорию:</p>
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Поиск...​"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Categories Grid - 2 columns on mobile, 3 on desktop */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {filteredCategories.map((category) => (
+                    <motion.button
+                      key={`${category.name}-${category.slug}`}
+                      onClick={() => handleSelectCategory(category)}
+                      className="group relative bg-bg-card rounded-container border-none overflow-hidden transition-all duration-300"
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {/* Category Image - aspect-square with object-cover */}
+                      <div className="aspect-square w-full bg-bg-input overflow-hidden">
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                        <div className="hidden w-full h-full bg-gradient-to-br from-bg-input to-bg-card flex items-center justify-center">
+                          <div className="w-8 h-8 bg-accent rounded-full opacity-30"></div>
+                        </div>
+                      </div>
+
+                      {/* Category Name */}
+                      <div className="p-2">
+                        <p className="font-medium text-xs line-clamp-2 text-center text-gray-300">{category.name}</p>
+                      </div>
+
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <ChevronRight className="w-5 h-5 text-white" />
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {filteredCategories.length === 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-gray-400 text-sm">Категория не найдена</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === 2 && (
+            <motion.div
+              key="step2"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              {/* Step 2: Form Details */}
+              <div className="space-y-6">
+                {selectedCategory && (
+                  <div className="flex items-center gap-3 p-3 bg-bg-card rounded-container">
+                    <div className="w-12 h-12 bg-bg-input rounded-button overflow-hidden flex-shrink-0">
+                      <img
+                        src={selectedCategory.image}
+                        alt={selectedCategory.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold truncate">{selectedCategory.name}</h3>
+                      <p className="text-xs text-gray-400">Товар untuk platform ini</p>
+                    </div>
+                  </div>
+                )}
+
+                <form className="space-y-4">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      Название товара <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      placeholder="Например: Премиум аккаунт"
+                      maxLength={100}
+                      required
+                      className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                    />
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-gray-500">{formData.title.length}/100 символов</p>
+                      {titleError && <p className="text-xs text-red-500">{titleError}</p>}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      Описание товара <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Опишите товар подробно..."
+                      maxLength={500}
+                      required
+                      className="w-full h-24 px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm resize-none transition-colors"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">{formData.description.length}/500 символов</p>
+                  </div>
+
+                  {/* Smart Price */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold">
+                      Цена (₽) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Вы получите</p>
+                        <input
+                          type="number"
+                          name="priceSeller"
+                          value={formData.priceSeller}
+                          onChange={(e) => handlePriceChange("priceSeller", e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          step="0.01"
+                          required
+                          className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Цена для покупателя</p>
+                        <input
+                          type="number"
+                          name="priceBuyer"
+                          value={formData.priceBuyer}
+                          onChange={(e) => handlePriceChange("priceBuyer", e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          step="0.01"
+                          required
+                          className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 text-center">Комиссия системы: 10%</p>
+                  </div>
+
+                  {/* Quantity */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Количество</label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={formData.quantity}
+                      onChange={handleInputChange}
+                      placeholder="1"
+                      min="1"
+                      className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                    />
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Имя</label>
+                      <input
+                        type="text"
+                        name="contact"
+                        value={formData.contact}
+                        onChange={handleInputChange}
+                        placeholder="Иван"
+                        maxLength={50}
+                        className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="mail@example.com"
+                        className="w-full px-4 py-3 bg-bg-input border-none rounded-container focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-4">
+                    <motion.button
+                      type="button"
+                      onClick={prevStep}
+                      className="flex-1 px-4 py-3 border border-bg-card rounded-button text-white font-semibold hover:bg-bg-card transition-colors outline-none"
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Назад
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={nextStep}
+                      className="flex-1 px-4 py-3 bg-accent hover:bg-accent/90 text-white rounded-button font-semibold transition-colors outline-none"
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Далее
+                    </motion.button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === 3 && (
+            <motion.div
+              key="step3"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              {/* Step 3: Image Upload */}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-2">Загрузите фотографии</h2>
+                  <p className="text-sm text-gray-400">Добавьте до 5 фотографий товара для лучшего привлечения покупателей</p>
+                </div>
+
+                {/* Image Slots - aspect-square with dashed border */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="aspect-square border-2 border-dashed border-bg-card rounded-container flex items-center justify-center relative overflow-hidden bg-bg-input/30 hover:border-accent/50 transition-colors"
+                    >
+                      {images[i] ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={URL.createObjectURL(images[i])}
+                            alt={`Preview ${i + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <motion.button
+                            onClick={() => removeImage(i)}
+                            type="button"
+                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors outline-none"
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <X className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer w-full h-full flex items-center justify-center">
+                          <div className="text-center">
+                            <Upload className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                            <p className="text-xs text-gray-400">Нажмите для загрузки</p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            multiple
+                          />
+                        </label>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-xs text-gray-400 text-center">Загружено: {images.length} из 5 фотографий</p>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4">
+                  <motion.button
+                    type="button"
+                    onClick={prevStep}
+                    className="flex-1 px-4 py-3 border border-bg-card rounded-button text-white font-semibold hover:bg-bg-card transition-colors outline-none"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Назад
+                  </motion.button>
+                  <motion.button
+                    type="submit"
+                    onClick={handleSubmit}
+                    className="flex-1 px-4 py-3 bg-accent hover:bg-accent/90 text-white rounded-button font-semibold transition-colors outline-none"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Опубликовать
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
