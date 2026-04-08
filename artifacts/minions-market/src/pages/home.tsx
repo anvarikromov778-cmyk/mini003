@@ -1,22 +1,127 @@
 import { Link } from "wouter";
-import { useGetCategories, getGetCategoriesQueryKey, useGetMarketplaceStats, getGetMarketplaceStatsQueryKey, useListProducts, getListProductsQueryKey, useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
+import { useGetMarketplaceStats, getGetMarketplaceStatsQueryKey, useListProducts, getListProductsQueryKey, useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { useLang } from "@/lib/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { IconWrapper } from "@/components/ui/icon-wrapper";
-import { Search, Star, Eye, Gamepad2, Coins, Shield, Rocket, Crown, Swords, ShoppingBag, Sparkles, Users, TrendingUp, Heart, Smartphone, MessageCircle, MessageSquare, Video, Camera, Hash, Music, Play } from "lucide-react";
+import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
-const categoryIcons: Record<string, typeof Gamepad2> = {
-  "game-accounts": Gamepad2,
-  "game-items": Swords,
-  "game-currency": Coins,
-  "boosting": Rocket,
-  "services": Crown,
-  "other": ShoppingBag,
-};
+// ─── Мобильные игры ──────────────────────────────────────────────────────────
+const MOBILE_GAMES = [
+  { name: "Brawl Stars",     slug: "brawl-stars",     img: "https://play-lh.googleusercontent.com/BdxcVYGTGpzSIuWXAJqIKf0FbxdlYqLPxGI6tJHziyLzXCqKjKQPvJj5JR_IVVlQCg" },
+  { name: "Clash Royale",    slug: "clash-royale",    img: "https://play-lh.googleusercontent.com/3oBO96sTfT7YxKnULBVSmLSzHINjDAKnP-8mhm-Mm6j8-n3OaNq8BMwFO9PiFLMoHCbL" },
+  { name: "PUBG Mobile",     slug: "pubg-mobile",     img: "https://play-lh.googleusercontent.com/JRd05pyBH41qjgsJuWduRJpDeZG0Hnb0yjf2nWqO6VaV3aVOPH_YCgPlVvYMFNqf2A" },
+  { name: "Standoff 2",      slug: "standoff2",       img: "https://play-lh.googleusercontent.com/7nkpTKnUkZOF4GKPVq6sFMvjb8y9UilKCLNEWxpg5ysq5nv29nt9mkP_ILHhRHIJhQ" },
+  { name: "Clash of Clans",  slug: "clash-of-clans",  img: "https://play-lh.googleusercontent.com/LBc_-FKGR8QqZMiinBuCN3wAcE3SQSZ0yQENQTVFV8GRxxAXWFV4aSLBeFQ8E5DaQ" },
+  { name: "Mobile Legends",  slug: "mobile-legends",  img: "https://play-lh.googleusercontent.com/s5XnH_NQSHNjFiTOmGVRbgzLz0EZDsD7xvlgr4sO3WLPTWHSGGzpHEtjxS9J6Zxf_A" },
+  { name: "Call of Duty M",  slug: "codm",            img: "https://play-lh.googleusercontent.com/2bHiLCuV3j0yl2FZKstMQcE7t7rrKqV3l-1qVNt5uo8_cNv3UmAexDSBaXVivp8x_Q" },
+  { name: "Free Fire",       slug: "free-fire",       img: "https://play-lh.googleusercontent.com/WWcssdzTGrZIBBMRTuHFbfGhfRQFMSGpFRbLfhGRqAFCsXoEFiCzA2vV8e3M6VKAA" },
+  { name: "Roblox",          slug: "roblox",          img: "https://play-lh.googleusercontent.com/WRRdSUYpPe2dSbBRTm2LovNM-LB4YsBt-cNLHN4M8iFJqVLAoGIOOV_mOmCF3ZYD3g" },
+  { name: "Minecraft",       slug: "minecraft-pe",    img: "https://play-lh.googleusercontent.com/VSwHMHlB_5qyGDMxE-UYsQhEWmVFUXFvtMnJgaAH8PG0Wm7sVVcIzqIMSRMpyobH1A" },
+  { name: "Genshin Impact",  slug: "genshin-mobile",  img: "https://play-lh.googleusercontent.com/Bmo2oAvGkgS13_PoZ6Mk1K-eD5AoVF2cqzXh_rVCUOY1G6qbJuMwkBTzc_E0H7ycg" },
+  { name: "Fortnite",        slug: "fortnite-mobile", img: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/83/e4/3b/83e43b5b-b7f5-3f70-f3c5-4475bdc2c02a/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/460x0w.png" },
+];
+
+// ─── Игры ПК ─────────────────────────────────────────────────────────────────
+const PC_GAMES = [
+  { name: "GTA 5 Online",      slug: "gta5",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg" },
+  { name: "Dota 2",            slug: "dota2",      img: "https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg" },
+  { name: "Valorant",          slug: "valorant",   img: "https://cdn2.steamgriddb.com/icon_thumb/bceefbf97d6b84cee2fddcf5fc1e1d26.png" },
+  { name: "Counter-Strike 2",  slug: "cs2",        img: "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg" },
+  { name: "Fortnite",          slug: "fortnite",   img: "https://cdn2.steamgriddb.com/icon_thumb/7c339f5b7e4dd17d5e7c5ef71ae36a1c.png" },
+  { name: "Minecraft",         slug: "minecraft",  img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1672970/header.jpg" },
+  { name: "Genshin Impact",    slug: "genshin",    img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1971870/header.jpg" },
+  { name: "World of Warcraft", slug: "wow",        img: "https://bnetcmsus-a.akamaihd.net/cms/template_resource/WOW_RETAIL_GAME_TILE_EN_US_1650568557369.jpg" },
+  { name: "League of Legends", slug: "lol",        img: "https://cdn2.steamgriddb.com/icon_thumb/86cca8d1ddee8c7fb24c3eacde2e8fae.png" },
+  { name: "Rust",              slug: "rust",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/252490/header.jpg" },
+  { name: "Apex Legends",      slug: "apex",       img: "https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg" },
+  { name: "Warframe",          slug: "warframe",   img: "https://cdn.cloudflare.steamstatic.com/steam/apps/230410/header.jpg" },
+];
+
+// ─── Приложения ──────────────────────────────────────────────────────────────
+const APPS = [
+  { name: "Telegram",    slug: "telegram",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/240px-Telegram_2019_Logo.svg.png", bg: "#2CA5E0" },
+  { name: "TikTok",      slug: "tiktok",      img: "https://sf-tb-sg.ibytedtos.com/obj/eden-sg/uhtyvueh7nulogpoguhm/tiktok-icon2.png", bg: "#010101" },
+  { name: "Instagram",   slug: "instagram",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/240px-Instagram_icon.png", bg: "#E1306C" },
+  { name: "YouTube",     slug: "youtube",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/240px-YouTube_full-color_icon_%282017%29.svg.png", bg: "#FF0000" },
+  { name: "Steam",       slug: "steam-acc",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/240px-Steam_icon_logo.svg.png", bg: "#1B2838" },
+  { name: "Spotify",     slug: "spotify",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png", bg: "#1DB954" },
+  { name: "Netflix",     slug: "netflix",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/240px-Netflix_2015_logo.svg.png", bg: "#E50914" },
+  { name: "Discord",     slug: "discord",     img: "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png", bg: "#5865F2" },
+  { name: "VK",          slug: "vk",          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/VK_Compact_Logo_%282021-present%29.svg/240px-VK_Compact_Logo_%282021-present%29.svg.png", bg: "#4C75A3" },
+  { name: "ChatGPT",     slug: "chatgpt",     img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/240px-ChatGPT_logo.svg.png", bg: "#10A37F" },
+  { name: "App Store",   slug: "appstore",    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/App_Store_%28iOS%29.svg/240px-App_Store_%28iOS%29.svg.png", bg: "#0D96F6" },
+  { name: "PlayStation", slug: "playstation", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/PlayStation_logo.svg/240px-PlayStation_logo.svg.png", bg: "#003087" },
+];
+
+interface CategoryItem {
+  name: string;
+  slug: string;
+  img: string;
+  bg?: string;
+}
+
+function CategoryGrid({ items, newSlugs }: { items: CategoryItem[]; newSlugs?: Set<string> }) {
+  return (
+    <div className="grid grid-cols-4 gap-x-2 gap-y-3 px-4">
+      {items.map((item) => (
+        <Link
+          key={item.slug}
+          href={`/catalog?category=${item.slug}`}
+          className="flex flex-col items-center gap-1"
+          data-testid={`cat-${item.slug}`}
+        >
+          <div className="relative w-full">
+            <div
+              className="w-full aspect-square rounded-[18px] overflow-hidden shadow-md"
+              style={{ background: item.bg || "#1a1a2e" }}
+            >
+              <img
+                src={item.img}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                onError={(e) => { e.currentTarget.style.opacity = "0"; }}
+              />
+            </div>
+            {newSlugs?.has(item.slug) && (
+              <span
+                className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-white text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-lg"
+                style={{ background: "#22c55e" }}
+              >
+                Новое
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-center leading-tight text-foreground/75 w-full line-clamp-1">
+            {item.name}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function CategorySection({
+  emoji, title, items, newSlugs = [],
+}: {
+  emoji: string;
+  title: string;
+  items: CategoryItem[];
+  newSlugs?: string[];
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 px-4">
+        <span className="text-xl leading-none">{emoji}</span>
+        <h2 className="font-bold text-base text-foreground">{title}</h2>
+      </div>
+      <CategoryGrid items={items} newSlugs={new Set(newSlugs)} />
+    </div>
+  );
+}
 
 function ProductCard({ product }: { product: any }) {
   return (
@@ -27,9 +132,7 @@ function ProductCard({ product }: { product: any }) {
             <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <IconWrapper size="xl">
-                <Gamepad2 />
-              </IconWrapper>
+              <IconWrapper size="xl"><Gamepad2 /></IconWrapper>
             </div>
           )}
           {product.isPromoted && (
@@ -42,18 +145,22 @@ function ProductCard({ product }: { product: any }) {
           <h3 className="font-semibold text-sm truncate text-foreground">{product.title}</h3>
           <div className="flex items-center justify-between">
             <span className="text-primary font-bold text-lg">{Number(product.price).toLocaleString()} ₽</span>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-0.5"><IconWrapper size="xs"><Eye /></IconWrapper>{product.views || 0}</span>
-            </div>
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+              <IconWrapper size="xs"><Eye /></IconWrapper>{product.views || 0}
+            </span>
           </div>
           {product.seller && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
               <div className="w-4 h-4 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-                {product.seller.avatar ? <img src={product.seller.avatar} className="w-full h-full object-cover" /> : <span className="text-[8px]">{product.seller.username?.[0]?.toUpperCase()}</span>}
+                {product.seller.avatar
+                  ? <img src={product.seller.avatar} className="w-full h-full object-cover" />
+                  : <span className="text-[8px]">{product.seller.username?.[0]?.toUpperCase()}</span>}
               </div>
               <span className="truncate">{product.seller.username}</span>
               {product.seller.rating && (
-                <span className="flex items-center gap-0.5 text-yellow-500"><Star className="w-3 h-3 fill-current" />{Number(product.seller.rating).toFixed(1)}</span>
+                <span className="flex items-center gap-0.5 text-yellow-500">
+                  <Star className="w-3 h-3 fill-current" />{Number(product.seller.rating).toFixed(1)}
+                </span>
               )}
             </div>
           )}
@@ -68,10 +175,12 @@ export default function HomePage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: categories, isLoading: catLoading } = useGetCategories({ query: { queryKey: getGetCategoriesQueryKey() } });
   const { data: stats } = useGetMarketplaceStats({ query: { queryKey: getGetMarketplaceStatsQueryKey() } });
   const { data: featured, isLoading: featuredLoading } = useGetFeaturedProducts({ query: { queryKey: getGetFeaturedProductsQueryKey() } });
-  const { data: recent, isLoading: recentLoading } = useListProducts({ sort: "newest", limit: 8 }, { query: { queryKey: getListProductsQueryKey({ sort: "newest", limit: 8 }) } });
+  const { data: recent, isLoading: recentLoading } = useListProducts(
+    { sort: "newest", limit: 8 },
+    { query: { queryKey: getListProductsQueryKey({ sort: "newest", limit: 8 }) } }
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +188,8 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 pb-4">
+    <div className="flex flex-col gap-6 pb-4">
+      {/* Hero */}
       <div className="gradient-primary px-4 pt-6 pb-8 rounded-b-3xl">
         <h1 className="text-xl font-bold text-white mb-1">Minions Market</h1>
         <p className="text-white/70 text-sm mb-4">{t("secureDeal")}</p>
@@ -97,12 +207,13 @@ export default function HomePage() {
         </form>
       </div>
 
+      {/* Stats */}
       {stats && (
         <div className="grid grid-cols-3 gap-3 px-4">
           {[
             { icon: ShoppingBag, value: stats.totalProducts || 0, label: t("totalProducts") },
-            { icon: Users, value: stats.totalUsers || 0, label: t("totalUsers") },
-            { icon: TrendingUp, value: stats.totalDeals || 0, label: t("totalDeals") },
+            { icon: Users,       value: stats.totalUsers    || 0, label: t("totalUsers") },
+            { icon: TrendingUp,  value: stats.totalDeals    || 0, label: t("totalDeals") },
           ].map((s, i) => (
             <div key={i} className="bg-card rounded-xl p-3 border border-border/30 text-center">
               <s.icon className="w-5 h-5 text-primary mx-auto mb-1" />
@@ -113,31 +224,31 @@ export default function HomePage() {
         </div>
       )}
 
-      <div className="px-4">
-        <h2 className="font-bold text-base mb-3">{t("allCategories")}</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {catLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
-          ) : categories?.map((cat) => {
-            const Icon = categoryIcons[cat.slug] || ShoppingBag;
-            return (
-              <Link
-                key={cat.id}
-                href={`/catalog?category=${cat.slug}`}
-                className="bg-card rounded-xl p-3 border border-border/30 flex flex-col items-center gap-1.5 hover:border-primary/30 transition-colors"
-                data-testid={`cat-${cat.slug}`}
-              >
-                <IconWrapper active>
-                  <Icon />
-                </IconWrapper>
-                <span className="text-xs font-medium text-center leading-tight">{cat.name}</span>
-                {cat.productCount != null && <span className="text-[10px] text-muted-foreground">{cat.productCount}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+      {/* Мобильные игры */}
+      <CategorySection
+        emoji="📱"
+        title="Мобильные игры"
+        items={MOBILE_GAMES}
+        newSlugs={["clash-royale", "pubg-mobile", "mobile-legends"]}
+      />
 
+      {/* Игры ПК */}
+      <CategorySection
+        emoji="🎮"
+        title="Игры (ПК)"
+        items={PC_GAMES}
+        newSlugs={["valorant", "genshin", "fortnite"]}
+      />
+
+      {/* Приложения */}
+      <CategorySection
+        emoji="💬"
+        title="Приложения"
+        items={APPS}
+        newSlugs={["telegram", "chatgpt"]}
+      />
+
+      {/* Featured */}
       {featured && featured.length > 0 && (
         <div className="px-4">
           <div className="flex items-center justify-between mb-3">
@@ -146,26 +257,27 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {featuredLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="w-48 h-52 rounded-xl shrink-0" />) :
-              featured.map((p) => (
-                <div key={p.id} className="w-48 shrink-0">
-                  <ProductCard product={p} />
-                </div>
-              ))
-            }
+            {featuredLoading
+              ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="w-48 h-52 rounded-xl shrink-0" />)
+              : featured.map((p) => (
+                  <div key={p.id} className="w-48 shrink-0">
+                    <ProductCard product={p} />
+                  </div>
+                ))}
           </div>
         </div>
       )}
 
+      {/* Recent */}
       <div className="px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-base">{t("recentProducts")}</h2>
           <Link href="/catalog" className="text-xs text-primary font-medium">{t("all")}</Link>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {recentLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-52 rounded-xl" />) :
-            recent?.products?.map((p) => <ProductCard key={p.id} product={p} />)
-          }
+          {recentLoading
+            ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-52 rounded-xl" />)
+            : recent?.products?.map((p) => <ProductCard key={p.id} product={p} />)}
           {!recentLoading && (!recent?.products || recent.products.length === 0) && (
             <div className="col-span-2 text-center py-12 text-muted-foreground text-sm">{t("noProducts")}</div>
           )}
