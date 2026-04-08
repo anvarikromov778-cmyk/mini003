@@ -5,63 +5,64 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { IconWrapper } from "@/components/ui/icon-wrapper";
-import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp } from "lucide-react";
+import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp, Swords, Target, Zap, Cube, Pickaxe, Crown, Gun, Car, Building, Hammer, MessageCircle, Video, Camera, Play, Music, Bot, Smartphone, Trophy } from "lucide-react";
+import { FaFire, FaYoutube, FaDiscord, FaVk, FaPlaystation } from "react-icons/fa";
+import { SiSteam, SiSpotify, SiNetflix } from "react-icons/si";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
 // ─── Мобильные игры ──────────────────────────────────────────────────────────
 const MOBILE_GAMES = [
-  { name: "Brawl Stars",     slug: "brawl-stars",     bg: "#FF6B35" },
-  { name: "Clash Royale",    slug: "clash-royale",    bg: "#00D4FF" },
-  { name: "PUBG Mobile",     slug: "pubg-mobile",     bg: "#FF6B35" },
-  { name: "Standoff 2",      slug: "standoff2",       bg: "#FF4444" },
-  { name: "Clash of Clans",  slug: "clash-of-clans",  bg: "#00D4FF" },
-  { name: "Mobile Legends",  slug: "mobile-legends",  bg: "#FF6B35" },
-  { name: "Call of Duty M",  slug: "codm",            bg: "#FF4444" },
-  { name: "Free Fire",       slug: "free-fire",       bg: "#FF6B35" },
-  { name: "Roblox",          slug: "roblox",          bg: "#00D4FF" },
-  { name: "Minecraft",       slug: "minecraft-pe",    bg: "#8BC34A" },
-  { name: "Genshin Impact",  slug: "genshin-mobile",  bg: "#FF6B35" },
-  { name: "Fortnite",        slug: "fortnite-mobile", bg: "#00D4FF" },
+  { name: "Brawl Stars",     slug: "brawl-stars",     icon: Star },
+  { name: "Clash Royale",    slug: "clash-royale",    icon: Trophy },
+  { name: "PUBG Mobile",     slug: "pubg-mobile",     icon: Gun },
+  { name: "Standoff 2",      slug: "standoff2",       icon: Target },
+  { name: "Clash of Clans",  slug: "clash-of-clans",  icon: Building },
+  { name: "Mobile Legends",  slug: "mobile-legends",  icon: Swords },
+  { name: "Call of Duty M",  slug: "codm",            icon: Gun },
+  { name: "Free Fire",       slug: "free-fire",       icon: FaFire },
+  { name: "Roblox",          slug: "roblox",          icon: Cube },
+  { name: "Minecraft",       slug: "minecraft-pe",    icon: Pickaxe },
+  { name: "Genshin Impact",  slug: "genshin-mobile",  icon: Zap },
+  { name: "Fortnite",        slug: "fortnite-mobile", icon: Building },
 ];
 
 // ─── Игры ПК ─────────────────────────────────────────────────────────────────
 const PC_GAMES = [
-  { name: "GTA 5 Online",      slug: "gta5",       bg: "#FF6B35" },
-  { name: "Dota 2",            slug: "dota2",      bg: "#FF4444" },
-  { name: "Valorant",          slug: "valorant",   bg: "#FF6B35" },
-  { name: "Counter-Strike 2",  slug: "cs2",        bg: "#FF4444" },
-  { name: "Fortnite",          slug: "fortnite",   bg: "#00D4FF" },
-  { name: "Minecraft",         slug: "minecraft",  bg: "#8BC34A" },
-  { name: "Genshin Impact",    slug: "genshin",    bg: "#FF6B35" },
-  { name: "World of Warcraft", slug: "wow",        bg: "#00D4FF" },
-  { name: "League of Legends", slug: "lol",        bg: "#FF6B35" },
-  { name: "Rust",              slug: "rust",       bg: "#FF4444" },
-  { name: "Apex Legends",      slug: "apex",       bg: "#FF6B35" },
-  { name: "Warframe",          slug: "warframe",   bg: "#00D4FF" },
+  { name: "GTA 5 Online",      slug: "gta5",       icon: Car },
+  { name: "Dota 2",            slug: "dota2",      icon: Swords },
+  { name: "Valorant",          slug: "valorant",   icon: Target },
+  { name: "Counter-Strike 2",  slug: "cs2",        icon: Gun },
+  { name: "Fortnite",          slug: "fortnite",   icon: Building },
+  { name: "Minecraft",         slug: "minecraft",  icon: Pickaxe },
+  { name: "Genshin Impact",    slug: "genshin",    icon: Zap },
+  { name: "World of Warcraft", slug: "wow",        icon: Crown },
+  { name: "League of Legends", slug: "lol",        icon: Trophy },
+  { name: "Rust",              slug: "rust",       icon: Hammer },
+  { name: "Apex Legends",      slug: "apex",       icon: Gun },
+  { name: "Warframe",          slug: "warframe",   icon: Swords },
 ];
 
 // ─── Приложения ──────────────────────────────────────────────────────────────
 const APPS = [
-  { name: "Telegram",    slug: "telegram",    bg: "#2CA5E0" },
-  { name: "TikTok",      slug: "tiktok",      bg: "#010101" },
-  { name: "Instagram",   slug: "instagram",   bg: "#E1306C" },
-  { name: "YouTube",     slug: "youtube",     bg: "#FF0000" },
-  { name: "Steam",       slug: "steam-acc",   bg: "#1B2838" },
-  { name: "Spotify",     slug: "spotify",     bg: "#1DB954" },
-  { name: "Netflix",     slug: "netflix",     bg: "#E50914" },
-  { name: "Discord",     slug: "discord",     bg: "#5865F2" },
-  { name: "VK",          slug: "vk",          bg: "#4C75A3" },
-  { name: "ChatGPT",     slug: "chatgpt",     bg: "#10A37F" },
-  { name: "App Store",   slug: "appstore",    bg: "#0D96F6" },
-  { name: "PlayStation", slug: "playstation", bg: "#003087" },
+  { name: "Telegram",    slug: "telegram",    icon: MessageCircle },
+  { name: "TikTok",      slug: "tiktok",      icon: Video },
+  { name: "Instagram",   slug: "instagram",   icon: Camera },
+  { name: "YouTube",     slug: "youtube",     icon: FaYoutube },
+  { name: "Steam",       slug: "steam-acc",   icon: SiSteam },
+  { name: "Spotify",     slug: "spotify",     icon: SiSpotify },
+  { name: "Netflix",     slug: "netflix",     icon: SiNetflix },
+  { name: "Discord",     slug: "discord",     icon: FaDiscord },
+  { name: "VK",          slug: "vk",          icon: FaVk },
+  { name: "ChatGPT",     slug: "chatgpt",     icon: Bot },
+  { name: "App Store",   slug: "appstore",    icon: Smartphone },
+  { name: "PlayStation", slug: "playstation", icon: FaPlaystation },
 ];
 
 interface CategoryItem {
   name: string;
   slug: string;
-  img?: string;
-  bg?: string;
+  icon: React.ComponentType<any>;
 }
 
 function CategoryGrid({ items, newSlugs }: { items: CategoryItem[]; newSlugs?: Set<string> }) {
@@ -75,11 +76,10 @@ function CategoryGrid({ items, newSlugs }: { items: CategoryItem[]; newSlugs?: S
           data-testid={`cat-${item.slug}`}
         >
           <div className="relative w-full">
-            <div
-              className="w-full aspect-square rounded-[18px] overflow-hidden shadow-md flex items-center justify-center text-white text-lg font-bold"
-              style={{ background: item.bg || "#6366f1" }}
-            >
-              {item.name.charAt(0)}
+            <div className="w-full aspect-square rounded-[18px] overflow-hidden shadow-md flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors">
+              <IconWrapper size="lg" className="text-primary">
+                <item.icon />
+              </IconWrapper>
             </div>
             {newSlugs?.has(item.slug) && (
               <span
