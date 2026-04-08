@@ -1,10 +1,9 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import https from "https";
 import http from "http";
 
 const router = Router();
 
-// Все станции с несколькими fallback URL
 const STATIONS: Record<string, { name: string; urls: string[] }> = {
   "radio-record": {
     name: "Radio Record",
@@ -85,81 +84,116 @@ const STATIONS: Record<string, { name: string; urls: string[] }> = {
   },
 };
 
-// Отдаём список станций фронтенду
-router.get("/stations", (req, res) => {
+router.get("/stations", (_req, res) => {
   const list = Object.entries(STATIONS).map(([id, s]) => ({ id, name: s.name }));
   res.json(list);
 });
 
-// Прокси-стрим: браузер → наш сервер → радио-сервер
-// Это решает CORS полностью, т.к. браузер обращается к нашему домену
-router.get("/stream/:stationId", (req, res) => {
+/**
+ * Рекурсивно следует редиректам и стримит аудио.
+ * При ошибке или редиректе без Location вызывает onFail().
+ */
+function fetchStream(
+  targetUrl: string,
+  res: Response,
+  onFail: () => void,
+  redirectsLeft = 5
+): void {
+  if (redirectsLeft <= 0) {
+    onFail();
+    return;
+  }
+
+  const proto = targetUrl.startsWith("https") ? https : http;
+
+  const proxyReq = proto.get(
+    targetUrl,
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; RadioProxy/1.0)",
+        "Icy-MetaData": "1",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+      },
+      timeout: 15000,
+    },
+    (proxyRes) => {
+      const status = proxyRes.statusCode ?? 0;
+
+      // ── Редиректы 301/302/303/307/308 ─────────────────────────────────────
+      if (status >= 300 && status < 400) {
+        const location = proxyRes.headers["location"];
+        proxyRes.resume(); // потребляем тело чтобы освободить сокет
+        proxyReq.destroy();
+        if (location) {
+          const next = location.startsWith("http")
+            ? location
+            : new URL(location, targetUrl).href;
+          fetchStream(next, res, onFail, redirectsLeft - 1);
+        } else {
+          onFail();
+        }
+        return;
+      }
+
+      // ── Ошибки источника ──────────────────────────────────────────────────
+      if (status >= 400) {
+        proxyRes.resume();
+        proxyReq.destroy();
+        onFail();
+        return;
+      }
+
+      // ── Успех — стримим клиенту ────────────────────────────────────────────
+      const ct = proxyRes.headers["content-type"] || "audio/mpeg";
+      res.setHeader("Content-Type", ct);
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("X-Accel-Buffering", "no");
+      res.status(200);
+
+      proxyRes.pipe(res);
+
+      proxyRes.on("error", () => {
+        if (!res.writableEnded) res.end();
+      });
+
+      // Клиент нажал стоп — убиваем upstream
+      res.on("close", () => proxyReq.destroy());
+    }
+  );
+
+  proxyReq.on("error", () => onFail());
+  proxyReq.on("timeout", () => {
+    proxyReq.destroy();
+    onFail();
+  });
+}
+
+// Прокси-стрим: браузер → Express → радио-сервер
+// Решает CORS; перебирает fallback URL; следует редиректам
+router.get("/stream/:stationId", (req: Request, res: Response) => {
   const station = STATIONS[req.params.stationId];
   if (!station) {
     res.status(404).json({ message: "Station not found" });
     return;
   }
 
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("X-Accel-Buffering", "no"); // отключаем буферизацию nginx если есть
-
   let urlIndex = 0;
 
-  function tryUrl() {
+  function tryNext() {
     if (urlIndex >= station.urls.length) {
       if (!res.headersSent) {
         res.status(502).json({ message: "All stream URLs failed" });
+      } else if (!res.writableEnded) {
+        res.end();
       }
       return;
     }
-
-    const targetUrl = station.urls[urlIndex++];
-    const proto = targetUrl.startsWith("https") ? https : http;
-
-    const proxyReq = proto.get(
-      targetUrl,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; RadioProxy/1.0)",
-          "Icy-MetaData": "1",
-          "Accept": "*/*",
-          "Connection": "keep-alive",
-        },
-        timeout: 15000,
-      },
-      (proxyRes) => {
-        if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
-          proxyReq.destroy();
-          tryUrl();
-          return;
-        }
-
-        // Прокидываем Content-Type от источника
-        const ct = proxyRes.headers["content-type"] || "audio/mpeg";
-        res.setHeader("Content-Type", ct);
-        res.status(200);
-
-        proxyRes.pipe(res);
-
-        proxyRes.on("error", () => {
-          if (!res.headersSent) tryUrl();
-        });
-
-        res.on("close", () => {
-          proxyReq.destroy();
-        });
-      }
-    );
-
-    proxyReq.on("error", () => tryUrl());
-    proxyReq.on("timeout", () => {
-      proxyReq.destroy();
-      tryUrl();
-    });
+    fetchStream(station.urls[urlIndex++], res, tryNext);
   }
 
-  tryUrl();
+  tryNext();
 });
 
 export default router;
