@@ -37,7 +37,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function detectTelegramMiniApp(): boolean {
   try {
-    return !!(window as any).Telegram?.WebApp?.initData;
+    const tg = (window as any).Telegram?.WebApp;
+    return !!(tg?.initData && tg.initData.length > 0);
   } catch {
     return false;
   }
@@ -53,7 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
-  const [isTelegramMiniApp] = useState(detectTelegramMiniApp);
+  // Проверяем сразу и ещё раз через 500мс — TG WebApp может загрузиться позже
+  const [isTelegramMiniApp, setIsTelegramMiniApp] = useState(detectTelegramMiniApp);
+
+  useEffect(() => {
+    if (isTelegramMiniApp) return;
+    const timer = setTimeout(() => {
+      if (detectTelegramMiniApp()) setIsTelegramMiniApp(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isTelegramMiniApp]);
 
   const setAuth = useCallback((newToken: string, newUser: User) => {
     setToken(newToken);
