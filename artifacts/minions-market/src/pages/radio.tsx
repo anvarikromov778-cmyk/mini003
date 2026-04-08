@@ -90,15 +90,16 @@ export default function RadioPage() {
   );
 
   useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.load();
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.src = selectedStation.url;
+    audio.load();
     if (isPlaying) {
-      audioRef.current
-        .play()
-        .catch(() => setIsPlaying(false));
+      audio.play().catch(() => setIsPlaying(false));
     }
-  }, [selectedStation, isPlaying]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStation]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -107,10 +108,11 @@ export default function RadioPage() {
       audio.pause();
       setIsPlaying(false);
     } else {
-      audio
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
+      if (!audio.src || audio.src !== selectedStation.url) {
+        audio.src = selectedStation.url;
+        audio.load();
+      }
+      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     }
   };
 
