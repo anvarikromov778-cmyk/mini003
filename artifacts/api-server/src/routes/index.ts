@@ -10,6 +10,7 @@ import messagesRouter from "./messages";
 import adminRouter from "./admin";
 import botRouter from "./bot";
 import featuresRouter from "./features";
+import radioRouter from "./radio";
 import { authMiddleware } from "../lib/auth";
 import { db } from "@workspace/db";
 import { products, users, favorites } from "@workspace/db/schema";
@@ -33,6 +34,7 @@ router.use("/messages", messagesRouter);
 router.use("/admin", adminRouter);
 router.use("/bot", botRouter);
 router.use("/features", featuresRouter);
+router.use("/radio", radioRouter);
 
 router.get("/favorites", authMiddleware, async (req, res) => {
   try {
@@ -72,3 +74,4 @@ router.put("/profile", authMiddleware, async (req, res) => {
 });
 
 export default router;
+ 
