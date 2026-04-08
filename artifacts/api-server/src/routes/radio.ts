@@ -35,21 +35,23 @@ const STATIONS: Record<string, { name: string; urls: string[] }> = {
     urls: [
       "https://dfm.hostingradio.ru/dfm128.mp3",
       "https://dfm96.hostingradio.ru/dfm96.aacp",
+      "https://dfm.cdnvideo.ru/dfm128.mp3",
     ],
   },
   "mayak": {
     name: "Радио Маяк",
     urls: [
+      "https://mayak.hostingradio.ru/mayak128.mp3",
       "https://icecast.radiomayak.ru/mayak128.mp3",
       "https://mayak.hostingradio.ru/mayak96.aacp",
-      "https://icecast.radiomayak.ru/mayak128",
     ],
   },
   "vesti-fm": {
     name: "Вести FM",
     urls: [
-      "https://icecast.vesti.ru/vestifm_mp3_128kbps",
       "https://vedfm.cdnvideo.ru/vesti128.mp3",
+      "https://icecast.vesti.ru/vestifm_mp3_128kbps",
+      "https://vesti.hostingradio.ru/vesti96.aacp",
     ],
   },
   "autoradio": {
@@ -69,8 +71,9 @@ const STATIONS: Record<string, { name: string; urls: string[] }> = {
   "monte-carlo": {
     name: "Radio Monte Carlo",
     urls: [
+      "https://mc.hostingradio.ru/mc128.mp3",
       "https://mc.hostingradio.ru/mc96.aacp",
-      "https://mcradio.hostingradio.ru/mc128",
+      "https://mcradio.hostingradio.ru/mc128.mp3",
     ],
   },
   "hit-fm": {
@@ -120,8 +123,10 @@ router.get("/stream/:stationId", (req, res) => {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; RadioProxy/1.0)",
           "Icy-MetaData": "1",
+          "Accept": "*/*",
+          "Connection": "keep-alive",
         },
-        timeout: 8000,
+        timeout: 15000,
       },
       (proxyRes) => {
         if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
