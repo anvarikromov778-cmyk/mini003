@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build frontend
 RUN pnpm --filter @workspace/minions-market run build
