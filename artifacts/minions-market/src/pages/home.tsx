@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { IconWrapper } from "@/components/ui/icon-wrapper";
-import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp, Swords, Target, Zap, Cube, Pickaxe, Crown, Gun, Car, Building, Hammer, MessageCircle, Video, Camera, Play, Music, Bot, Smartphone, Trophy } from "lucide-react";
+import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp, Swords, Target, Zap, Box, Pickaxe, Crown, Crosshair, Car, Building, Hammer, MessageCircle, Video, Camera, Play, Music, Bot, Smartphone, Trophy } from "lucide-react";
 import { FaFire, FaYoutube, FaDiscord, FaVk, FaPlaystation } from "react-icons/fa";
 import { SiSteam, SiSpotify, SiNetflix } from "react-icons/si";
 import { useState } from "react";
@@ -15,13 +15,13 @@ import { useLocation } from "wouter";
 const MOBILE_GAMES = [
   { name: "Brawl Stars",     slug: "brawl-stars",     icon: Star },
   { name: "Clash Royale",    slug: "clash-royale",    icon: Trophy },
-  { name: "PUBG Mobile",     slug: "pubg-mobile",     icon: Gun },
+  { name: "PUBG Mobile",     slug: "pubg-mobile",     icon: Crosshair },
   { name: "Standoff 2",      slug: "standoff2",       icon: Target },
   { name: "Clash of Clans",  slug: "clash-of-clans",  icon: Building },
   { name: "Mobile Legends",  slug: "mobile-legends",  icon: Swords },
-  { name: "Call of Duty M",  slug: "codm",            icon: Gun },
+  { name: "Call of Duty M",  slug: "codm",            icon: Crosshair },
   { name: "Free Fire",       slug: "free-fire",       icon: FaFire },
-  { name: "Roblox",          slug: "roblox",          icon: Cube },
+  { name: "Roblox",          slug: "roblox",          icon: Box },
   { name: "Minecraft",       slug: "minecraft-pe",    icon: Pickaxe },
   { name: "Genshin Impact",  slug: "genshin-mobile",  icon: Zap },
   { name: "Fortnite",        slug: "fortnite-mobile", icon: Building },
@@ -32,14 +32,14 @@ const PC_GAMES = [
   { name: "GTA 5 Online",      slug: "gta5",       icon: Car },
   { name: "Dota 2",            slug: "dota2",      icon: Swords },
   { name: "Valorant",          slug: "valorant",   icon: Target },
-  { name: "Counter-Strike 2",  slug: "cs2",        icon: Gun },
+  { name: "Counter-Strike 2",  slug: "cs2",        icon: Crosshair },
   { name: "Fortnite",          slug: "fortnite",   icon: Building },
   { name: "Minecraft",         slug: "minecraft",  icon: Pickaxe },
   { name: "Genshin Impact",    slug: "genshin",    icon: Zap },
   { name: "World of Warcraft", slug: "wow",        icon: Crown },
   { name: "League of Legends", slug: "lol",        icon: Trophy },
   { name: "Rust",              slug: "rust",       icon: Hammer },
-  { name: "Apex Legends",      slug: "apex",       icon: Gun },
+  { name: "Apex Legends",      slug: "apex",       icon: Crosshair },
   { name: "Warframe",          slug: "warframe",   icon: Swords },
 ];
 
