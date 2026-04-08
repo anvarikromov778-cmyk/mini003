@@ -24,7 +24,6 @@ export default function AuthPage() {
   const [botUsername, setBotUsername] = useState<string | null>(null);
   const [directMessageSent, setDirectMessageSent] = useState(false);
 
-  // FIX: загружаем имя бота сразу при монтировании — пользователь видит его до нажатия кнопки
   useEffect(() => {
     fetch("/api/auth/config")
       .then((r) => r.json())
@@ -37,12 +36,17 @@ export default function AuthPage() {
   const requestCodeMutation = useRequestAuthCode();
   const telegramAuthMutation = useTelegramAuth();
 
+  // Редирект если уже залогинен
   useEffect(() => {
     if (isAuthenticated) setLocation("/");
   }, [isAuthenticated, setLocation]);
 
+  // Авто-вход через TG initData
   useEffect(() => {
-    if (!isTelegramMiniApp) return;
+    if (!isTelegramMiniApp) {
+      setTelegramLoading(false);
+      return;
+    }
     const initData = (window as any).Telegram?.WebApp?.initData;
     if (!initData || initData.length === 0) {
       setTelegramLoading(false);
@@ -56,7 +60,6 @@ export default function AuthPage() {
         setLocation("/");
       },
       onError: () => {
-        // Если авто-вход не удался — показываем обычную форму
         setTelegramLoading(false);
         toast({ title: t("error"), variant: "destructive" });
       },
@@ -75,7 +78,6 @@ export default function AuthPage() {
         if ((res as any).directMessageSent) {
           setDirectMessageSent(true);
         } else if (bot) {
-          // FIX: сразу открываем бота с параметром username — бот сам найдёт код
           window.open(`https://t.me/${bot}?start=${normalizedUsername}`, "_blank");
         }
         toast({ title: t("codeSent") });
@@ -109,8 +111,8 @@ export default function AuthPage() {
     });
   };
 
-  // Пока не завершилась проверка TG или идёт авто-вход — показываем спиннер, форму НЕ рендерим
-  if (isTelegramLoading || (isTelegramMiniApp && telegramAuthMutation.isPending)) {
+  // Показываем спиннер пока идёт TG авто-вход
+  if (isTelegramLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
