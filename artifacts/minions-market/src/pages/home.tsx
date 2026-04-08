@@ -5,64 +5,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { IconWrapper } from "@/components/ui/icon-wrapper";
-import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp, Swords, Target, Zap, Box, Pickaxe, Crown, Crosshair, Car, Building, Hammer, MessageCircle, Video, Camera, Play, Music, Bot, Smartphone, Trophy } from "lucide-react";
-import { FaFire, FaYoutube, FaDiscord, FaVk, FaPlaystation } from "react-icons/fa";
-import { SiSteam, SiSpotify, SiNetflix } from "react-icons/si";
+import { Search, Star, Eye, Gamepad2, ShoppingBag, Sparkles, Users, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { PLAYEROK_LOGO, PLAYEROK_GAMES, PLAYEROK_MOBILE_GAMES, PLAYEROK_APPS } from "@/data/playerok-categories";
 
-// ─── Мобильные игры ──────────────────────────────────────────────────────────
-const MOBILE_GAMES = [
-  { name: "Brawl Stars",     slug: "brawl-stars",     icon: Star },
-  { name: "Clash Royale",    slug: "clash-royale",    icon: Trophy },
-  { name: "PUBG Mobile",     slug: "pubg-mobile",     icon: Crosshair },
-  { name: "Standoff 2",      slug: "standoff2",       icon: Target },
-  { name: "Clash of Clans",  slug: "clash-of-clans",  icon: Building },
-  { name: "Mobile Legends",  slug: "mobile-legends",  icon: Swords },
-  { name: "Call of Duty M",  slug: "codm",            icon: Crosshair },
-  { name: "Free Fire",       slug: "free-fire",       icon: FaFire },
-  { name: "Roblox",          slug: "roblox",          icon: Box },
-  { name: "Minecraft",       slug: "minecraft-pe",    icon: Pickaxe },
-  { name: "Genshin Impact",  slug: "genshin-mobile",  icon: Zap },
-  { name: "Fortnite",        slug: "fortnite-mobile", icon: Building },
-];
-
-// ─── Игры ПК ─────────────────────────────────────────────────────────────────
-const PC_GAMES = [
-  { name: "GTA 5 Online",      slug: "gta5",       icon: Car },
-  { name: "Dota 2",            slug: "dota2",      icon: Swords },
-  { name: "Valorant",          slug: "valorant",   icon: Target },
-  { name: "Counter-Strike 2",  slug: "cs2",        icon: Crosshair },
-  { name: "Fortnite",          slug: "fortnite",   icon: Building },
-  { name: "Minecraft",         slug: "minecraft",  icon: Pickaxe },
-  { name: "Genshin Impact",    slug: "genshin",    icon: Zap },
-  { name: "World of Warcraft", slug: "wow",        icon: Crown },
-  { name: "League of Legends", slug: "lol",        icon: Trophy },
-  { name: "Rust",              slug: "rust",       icon: Hammer },
-  { name: "Apex Legends",      slug: "apex",       icon: Crosshair },
-  { name: "Warframe",          slug: "warframe",   icon: Swords },
-];
-
-// ─── Приложения ──────────────────────────────────────────────────────────────
-const APPS = [
-  { name: "Telegram",    slug: "telegram",    icon: MessageCircle },
-  { name: "TikTok",      slug: "tiktok",      icon: Video },
-  { name: "Instagram",   slug: "instagram",   icon: Camera },
-  { name: "YouTube",     slug: "youtube",     icon: FaYoutube },
-  { name: "Steam",       slug: "steam-acc",   icon: SiSteam },
-  { name: "Spotify",     slug: "spotify",     icon: SiSpotify },
-  { name: "Netflix",     slug: "netflix",     icon: SiNetflix },
-  { name: "Discord",     slug: "discord",     icon: FaDiscord },
-  { name: "VK",          slug: "vk",          icon: FaVk },
-  { name: "ChatGPT",     slug: "chatgpt",     icon: Bot },
-  { name: "App Store",   slug: "appstore",    icon: Smartphone },
-  { name: "PlayStation", slug: "playstation", icon: FaPlaystation },
-];
+const MOBILE_GAMES = PLAYEROK_MOBILE_GAMES;
+const PC_GAMES = PLAYEROK_GAMES;
+const APPS = PLAYEROK_APPS;
 
 interface CategoryItem {
   name: string;
   slug: string;
-  icon: React.ComponentType<any>;
+  icon?: React.ComponentType<any>;
+  image?: string;
+  bg?: string;
 }
 
 function CategoryGrid({ items, newSlugs }: { items: CategoryItem[]; newSlugs?: Set<string> }) {
@@ -76,10 +33,22 @@ function CategoryGrid({ items, newSlugs }: { items: CategoryItem[]; newSlugs?: S
           data-testid={`cat-${item.slug}`}
         >
           <div className="relative w-full">
-            <div className="w-full aspect-square rounded-[18px] overflow-hidden shadow-md flex items-center justify-center bg-primary/10 hover:bg-primary/20 transition-colors">
-              <IconWrapper size="lg" className="text-primary">
-                <item.icon />
-              </IconWrapper>
+            <div
+              className="w-full aspect-square rounded-[18px] overflow-hidden shadow-md flex items-center justify-center transition-colors"
+              style={{ background: item.bg || "#eef2ff" }}
+            >
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={`${item.name} logo`}
+                  className="max-w-3/4 max-h-3/4 object-contain"
+                  style={{ filter: item.image.includes('simple-icons@11/icons') ? 'invert(1)' : undefined }}
+                />
+              ) : (
+                <IconWrapper size="xl" className="text-white">
+                  <item.icon />
+                </IconWrapper>
+              )}
             </div>
             {newSlugs?.has(item.slug) && (
               <span
@@ -186,7 +155,17 @@ export default function HomePage() {
     <div className="flex flex-col gap-6 pb-4">
       {/* Hero */}
       <div className="gradient-primary px-4 pt-6 pb-8 rounded-b-3xl">
-        <h1 className="text-xl font-bold text-white mb-1">Minions Market</h1>
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src={PLAYEROK_LOGO}
+            alt="PlayerOK"
+            className="w-10 h-10 rounded-xl border border-white/20 bg-white/10 object-cover"
+          />
+          <div>
+            <h1 className="text-xl font-bold text-white">PlayerOK Market</h1>
+            <p className="text-white/70 text-sm">Маркетплейс игровых товаров и услуг</p>
+          </div>
+        </div>
         <p className="text-white/70 text-sm mb-4">{t("secureDeal")}</p>
         <form onSubmit={handleSearch}>
           <div className="relative">
