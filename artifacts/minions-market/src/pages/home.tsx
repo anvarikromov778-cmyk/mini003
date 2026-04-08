@@ -4,6 +4,7 @@ import { useLang } from "@/lib/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { IconWrapper } from "@/components/ui/icon-wrapper";
 import { Search, Star, Eye, Gamepad2, Coins, Shield, Rocket, Crown, Swords, ShoppingBag, Sparkles, Users, TrendingUp, Heart, Smartphone, MessageCircle, MessageSquare, Video, Camera, Hash, Music, Play } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -26,12 +27,14 @@ function ProductCard({ product }: { product: any }) {
             <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Gamepad2 className="w-10 h-10 text-muted-foreground/40" />
+              <IconWrapper size="xl">
+                <Gamepad2 />
+              </IconWrapper>
             </div>
           )}
           {product.isPromoted && (
             <Badge className="absolute top-2 left-2 bg-primary/90 text-xs gap-1">
-              <Sparkles className="w-3 h-3" /> TOP
+              <IconWrapper size="xs"><Sparkles /></IconWrapper> TOP
             </Badge>
           )}
         </div>
@@ -40,7 +43,7 @@ function ProductCard({ product }: { product: any }) {
           <div className="flex items-center justify-between">
             <span className="text-primary font-bold text-lg">{Number(product.price).toLocaleString()} ₽</span>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{product.views || 0}</span>
+              <span className="flex items-center gap-0.5"><IconWrapper size="xs"><Eye /></IconWrapper>{product.views || 0}</span>
             </div>
           </div>
           {product.seller && (
@@ -124,7 +127,9 @@ export default function HomePage() {
                 className="bg-card rounded-xl p-3 border border-border/30 flex flex-col items-center gap-1.5 hover:border-primary/30 transition-colors"
                 data-testid={`cat-${cat.slug}`}
               >
-                <Icon className="w-6 h-6 text-primary" />
+                <IconWrapper active>
+                  <Icon />
+                </IconWrapper>
                 <span className="text-xs font-medium text-center leading-tight">{cat.name}</span>
                 {cat.productCount != null && <span className="text-[10px] text-muted-foreground">{cat.productCount}</span>}
               </Link>

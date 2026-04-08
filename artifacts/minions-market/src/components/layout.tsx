@@ -4,6 +4,7 @@ import { Home, Search, PlusCircle, MessageCircle, User, Menu, X, Radio, Settings
 import { useAuth } from "@/lib/auth";
 import { useLang } from "@/lib/i18n";
 import { useGetChats, getGetChatsQueryKey } from "@workspace/api-client-react";
+import { IconWrapper } from "@/components/ui/icon-wrapper";
 import type { ReactNode } from "react";
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -84,7 +85,9 @@ export function Layout({ children }: { children: ReactNode }) {
                           active ? "border-primary bg-primary/10" : "border-border/30 bg-card hover:border-primary/30"
                         }`}
                       >
-                        <item.icon className="w-5 h-5 text-primary" />
+                        <IconWrapper active={active} size="md">
+                          <item.icon />
+                        </IconWrapper>
                         <span>{item.label}</span>
                       </button>
                     );
@@ -125,7 +128,9 @@ export function Layout({ children }: { children: ReactNode }) {
                   }`}
                   data-testid={`nav-${item.path.replace("/", "") || "home"}`}
                 >
-                  <item.icon className="w-5 h-5" />
+                  <IconWrapper active={active} size="md">
+                    <item.icon />
+                  </IconWrapper>
                   <span className="text-[10px] font-medium">{item.label}</span>
                   {item.badge && item.badge > 0 ? (
                     <span className="absolute -top-0.5 right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
